@@ -35,7 +35,7 @@ export function UsernameForm() {
           </p>
         )}
       </div>
-      <Button size="lg" className="w-full" disabled={pending}>
+      <Button type="submit" size="lg" className="w-full" disabled={pending}>
         Devam et
       </Button>
     </form>

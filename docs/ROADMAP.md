@@ -53,10 +53,11 @@
 ### Faz 1 — Çekirdek (MVP)
 - [x] Auth: Google ile giriş, zorunlu ve eşsiz kullanıcı adı (onboarding). Apple ile giriş mağaza öncesi eklenecek.
 - Veri modeli: `profiles`, `chains`, `check_ins`, haftalık joker takibi
-- Zincir oluşturma (konu, renk, tür: yap / bırak)
-- Günlük check-in RPC'si: joker, kırılma ve saat dilimi mantığı
-- Zincir görselleştirme (spiral SVG, yanıp sönen aktif halka)
-- +1 animasyonu, profil sayfası (aktif zincir, ömür boyu toplam)
+- [x] Zincir oluşturma (konu, renk, tür: yap / bırak)
+- [x] Günlük check-in RPC'si: joker, kırılma ve saat dilimi mantığı
+- [x] Zincir görselleştirme (spiral SVG, yanıp sönen aktif halka)
+- [x] +1 animasyonu
+- [ ] Profil sayfası, joker göstergesi, zincir arşivleme/silme, zincir sayısı limiti
 
 ### Faz 2 — Sosyal
 - Arkadaş ekleme/davet linki
