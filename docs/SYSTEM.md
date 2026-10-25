@@ -330,6 +330,27 @@ Next.js Server Actions sadece web içindir.
 - **Veritabanı seyreltme:** lig sıralaması grup başına 6 saatte bir, rozet kontrolü 30 dakikada bir hesaplanır.
   Kullanıcıya özel veri sunucuda ortak önbelleğe konmaz (güvenlik); ortak veri (lig) veritabanında paylaşılır.
 
+### Tanıtım turu ve uygulama yükleme
+- **Tanıtım turu** (`components/tour/`): Ekran bulanıklaşır, hedef öğe delik açılıp net bırakılır ve beyaz halkayla
+  çevrilir; yanında mascot **Halka** konuşur (İleri/Geri/Atla, ilerleme noktaları, Esc ile kapanır, odak kutu içinde
+  kalır, "hareketi azalt" saygı görür). Kütüphane yok; hedefler `data-tour="..."` özniteliğiyle işaretlenir
+  (`create-chain`, `summary`, `league`, `badges`, `friends`, `nav`, `chain-card`, `checkin`, `joker`, `share`, `menu`).
+  **Sayfada hedefi olmayan adım otomatik atlanır** (örn. zinciri yokken "lig" adımı).
+- **Aşamalar** (`profiles.tour_stage`): 0 görülmedi, 1 genel tur bitti (zincir turu bekliyor), 2 tamamlandı/atlandı.
+  Zinciri olmayan yeni kullanıcı genel turu görür, son adımda "İlk zincirimi oluştur"a yönlenir; ilk zincirden sonra
+  **zincir turu** (Bugünü tamamla, joker, paylaş, menü, hatırlatma ipucu) açılır. Zinciri olan mevcut kullanıcı ikisini
+  birlikte görür. **Atla** her yerde turu kalıcı kapatır (aşama 2). Başka bir pencere (yeni rozet) açıkken tur başlamaz.
+  İlerleme sadece ilerler (`set_tour_stage`); Ayarlar'daki "Tanıtım turunu tekrar göster" `reset_tour()` ile sıfırlar.
+  Ayarlar `revalidatePath("/")` çağırır, yoksa tarayıcı önbelleğindeki ana sayfa turu tekrar açardı.
+- **Uygulamayı yükleme (PWA)** (`components/pwa/`, `lib/pwa-store.ts`): Yüklü uygulama olarak (standalone) açıldıysa hiçbir
+  şey gösterilmez ve `profiles.pwa_installed_at` bir kez kaydedilir (yükleme ölçümü). Yüklenmemişse ve kullanıcı turu
+  bitirip **ilk halkasını eklemişse** ana sayfada kapatılabilir şerit çıkar: Android/Chrome'da tarayıcının yükleme
+  isteği (`beforeinstallprompt`) varsa "Yükle", iPhone/iPad'de "Nasıl?" (Paylaş → Ana Ekrana Ekle rehberi). Kapatılırsa
+  **7 gün** gizlenir (localStorage). Ayarlar'da kalıcı "Ana ekrana ekle" satırı vardır. Kayıt sırasında popup
+  gösterilmez (kullanıcı henüz değeri görmedi); iPhone'da bildirimler sadece yüklü uygulamada çalıştığı için asıl neden
+  hatırlatmalardır. "Yüklendi mi?" kesin sadece standalone açılışta bilinir; tarayıcı sekmesinden başka yerde
+  yüklendiği anlaşılamaz.
+
 ### Arayüz notları
 - **Yazı tipi:** Geist (`latin` + `latin-ext`, Türkçe karakterler için). `globals.css`'te `--font-sans`
   `var(--font-geist-sans)`'e bağlıdır; kendine bağlı bırakılırsa tarayıcı serif'e düşer.
@@ -369,6 +390,7 @@ public/         sw.js, ikonlar
 12. `badges_and_sharing` - rozetler ve paylaşım kartı verisi
 13. `home_social` - bugünkü durum gizlilik ayarı, arkadaşlar bugün, ortak zincir özeti
 14. `perf_throttling` - lig sıralama kaydı, rozet kontrolünü seyreltme
+15. `onboarding_pwa` - tanıtım turu aşaması, PWA yükleme ölçümü
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -413,6 +435,7 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 | Lig sıralaması yenileme | en fazla 6 saatte bir |
 | Rozet kontrolü | en fazla 30 dakikada bir |
 | Tarayıcı sayfa önbelleği | 60 sn |
+| PWA şeridi gizleme | 7 gün |
 | Kırılma uyarısı saati | 22:00 yerel, en az 3 halkalık zincir |
 | Cron sıklığı | 10 dk (hatırlatma), Pazartesi 12:00 UTC (lig) |
 | Veri sıkıştırma eşiği | 60 gün |
