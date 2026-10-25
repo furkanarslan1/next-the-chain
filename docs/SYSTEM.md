@@ -124,6 +124,12 @@ Sadece **aktif zincir sıfırlanır**. `best_length`, zincirin `total_completed`
   okunur. Günde en fazla **20** bildirim, aynı kişiyi aynı nedenle bir kez bildirebilirsin.
 - **Profil gizliliği:** Bir profili sadece kendisi ve onunla (bekleyen dahil) arkadaşlık
   ilişkisi olanlar okuyabilir. Tüm kullanıcı listesi çekilemez.
+- **Bugünkü durumum (`share_today`, varsayılan açık):** Ana sayfadaki "Arkadaşların" kartında arkadaşların bugünkü
+  durumu görünür: `done` (tüm aktif zincirleri tamam), `partial` (bir kısmı), `waiting` (hiçbiri). Sadece bu üç durum
+  paylaşılır; zincir adı ya da sayısı görünmez. **Kapalıysa kişi şeritte hiç görünmez** ("tamamlamadı" bilgisi de
+  gizli kalır) **ve karşılıklılık gereği başkalarının durumunu da göremez** (`friends_today()` boş döner).
+  Ayar: Arkadaşlar sayfası, Gizlilik bölümü. Sadece kabul edilmiş arkadaşlar, en fazla 20 kişi; aktif zinciri
+  olmayanlar gösterilmez. Her kişinin durumu kendi yerel gününe göre hesaplanır, salt okuma yapılır.
 - **Arkadaş sıralaması:** ben + kabul edilmiş arkadaşlar, seçilen tarihten beri tamamlanan
   halka sayısı (tüm zincirler toplamı). Arayüzde **Bu hafta** (Pazartesi'den) ve **Bu ay**
   (ayın 1'inden). Sadece sayı ve kullanıcı adı görünür, zincir adları görünmez.
@@ -152,6 +158,8 @@ zinciri sıfırlanır; grup sıralaması üyelerin kendi zincir uzunluklarının
   Sahip **kendi grup zincirini silerse** grup dağılır.
 - **Üye zincirini silerse** üyelikten düşer.
 - **Arşivlenemez:** ortak zincir arşivlenemez (arşivdeki zincir ilerlemez ve sessizce kırılırdı).
+- **Ana sayfa özeti:** "Ortak zincirler" bölümünde her grup için "bugün x/y kişi tamamladı" (`my_groups_today()`,
+  salt okuma, sadece üyesi olduğun gruplar, davetli olanlar sayılmaz).
 - **Sınırlar:** grup başına en fazla **20 kişi**, kullanıcı başına en fazla **10 grup** kurma.
 - Grup tablolarına istemci erişimi **yoktur**; her şey RPC üzerinden. Sıralamayı sadece üyeler görür.
 
@@ -314,6 +322,8 @@ Next.js Server Actions sadece web içindir.
   azaltma ayarında durur. Hale renkleri `--halo-1..3` değişkenleriyle gelir; ana sayfa bunları kullanıcının zincir
   renklerine boyar (`components/sky-tint.tsx`).
 - **Ana sayfa:** selamlama, "Bugün x/y tamam" halka özeti, lig ve rozet kutucukları, zincir kartları.
+  **Haftalık şerit:** Pzt-Paz yedi daire; o gün var olan tüm zincirler tamamsa dolu, bir kısmı tamamsa yarım.
+  **Arkadaşların kartı:** bugünkü durum avatarları + bu haftaki sıralamanın ilk 3'ü ve senin yerin.
   **Zincir kartı:** zincirin renginde ışıma, Seri / En uzun / Toplam istatistikleri, büyük tamamla düğmesi, belirgin
   Paylaş düğmesi, arşiv/sil/nüks için "⋯" menüsü.
 
@@ -341,6 +351,7 @@ public/         sw.js, ikonlar
 10. `leagues` - ligler
 11. `more_notifications` - gelen kutusu, kırılma uyarısı, sosyal ve lig bildirimleri
 12. `badges_and_sharing` - rozetler ve paylaşım kartı verisi
+13. `home_social` - bugünkü durum gizlilik ayarı, arkadaşlar bugün, ortak zincir özeti
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
