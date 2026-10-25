@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     agentFeedback: true,
+    // Dinamik sayfalar tarayıcıda 60 sn tutulur: sekmeler arası gezinme sunucuya gitmez.
+    // Sunucu işlemleri (revalidatePath) bu önbelleği anında temizlediği için veri bayat kalmaz.
+    staleTimes: { dynamic: 60 },
   },
   cacheComponents: true,
   partialPrefetching: true,

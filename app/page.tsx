@@ -10,6 +10,7 @@ import { GroupsToday } from "@/components/groups-today";
 import { LeagueCard } from "@/components/league-card";
 import { NewBadgeDialog } from "@/components/new-badge-dialog";
 import { BADGES } from "@/lib/badges";
+import { HomeSkeleton } from "@/components/skeletons";
 import { SkyTint } from "@/components/sky-tint";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { TodaySummary } from "@/components/today-summary";
@@ -31,7 +32,7 @@ export default function Home() {
   return (
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 pt-8 pb-28">
-        <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
+        <Suspense fallback={<HomeSkeleton />}>
           <Dashboard />
         </Suspense>
       </main>

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ListSkeleton } from "@/components/skeletons";
 import { BottomNav } from "@/components/bottom-nav";
 import { FriendActions } from "@/components/friend-actions";
 import { FriendSearch } from "@/components/friend-search";
@@ -14,7 +15,7 @@ export default function FriendsPage() {
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-4 pt-8 pb-28">
         <h1 className="text-xl font-semibold">Arkadaşlar</h1>
-        <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
+        <Suspense fallback={<ListSkeleton />}>
           <FriendsContent />
         </Suspense>
       </main>

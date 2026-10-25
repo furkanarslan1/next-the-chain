@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ListSkeleton } from "@/components/skeletons";
 import Link from "next/link";
 import { BottomNav } from "@/components/bottom-nav";
 import { BadgeIcon } from "@/components/badge-icon";
@@ -17,7 +18,7 @@ export default function BadgesPage() {
           </Link>
           <h1 className="text-xl font-semibold">Rozetler</h1>
         </div>
-        <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
+        <Suspense fallback={<ListSkeleton />}>
           <BadgesContent />
         </Suspense>
       </main>

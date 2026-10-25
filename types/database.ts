@@ -404,6 +404,30 @@ export type Database = {
           },
         ]
       }
+      league_snapshots: {
+        Row: {
+          cohort: number
+          computed_at: string
+          rows: Json
+          tier: number
+          week_start: string
+        }
+        Insert: {
+          cohort: number
+          computed_at?: string
+          rows: Json
+          tier: number
+          week_start: string
+        }
+        Update: {
+          cohort?: number
+          computed_at?: string
+          rows?: Json
+          tier?: number
+          week_start?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -442,6 +466,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          badges_synced_at: string | null
           created_at: string
           discoverable: boolean
           display_name: string | null
@@ -464,6 +489,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          badges_synced_at?: string | null
           created_at?: string
           discoverable?: boolean
           display_name?: string | null
@@ -486,6 +512,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          badges_synced_at?: string | null
           created_at?: string
           discoverable?: boolean
           display_name?: string | null

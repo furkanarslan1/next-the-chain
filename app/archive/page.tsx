@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ListSkeleton } from "@/components/skeletons";
 import Link from "next/link";
 import { BottomNav } from "@/components/bottom-nav";
 import { ArchivedChainRow } from "@/components/archived-chain-row";
@@ -18,7 +19,7 @@ export default function ArchivePage() {
           </Link>
           <h1 className="text-xl font-semibold">Arşivlenen zincirler</h1>
         </div>
-        <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
+        <Suspense fallback={<ListSkeleton />}>
           <ArchiveContent />
         </Suspense>
       </main>

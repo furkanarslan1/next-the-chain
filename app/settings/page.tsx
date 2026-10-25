@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ListSkeleton } from "@/components/skeletons";
 import { BottomNav } from "@/components/bottom-nav";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -12,7 +13,7 @@ export default function SettingsPage() {
     <>
       <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-8 px-4 pt-8 pb-28">
         <h1 className="text-xl font-semibold">Ayarlar</h1>
-        <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
+        <Suspense fallback={<ListSkeleton />}>
           <SettingsContent />
         </Suspense>
       </main>

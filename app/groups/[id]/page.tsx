@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ListSkeleton } from "@/components/skeletons";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
@@ -21,7 +22,7 @@ export default function GroupPage(props: PageProps<"/groups/[id]">) {
         >
           Geri
         </Link>
-        <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
+        <Suspense fallback={<ListSkeleton />}>
           <GroupContent params={props.params} />
         </Suspense>
       </main>

@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ListSkeleton } from "@/components/skeletons";
 import Link from "next/link";
 import { LuTrophy } from "react-icons/lu";
 import { BottomNav } from "@/components/bottom-nav";
@@ -22,7 +23,7 @@ export default function LeaguePage() {
           </Link>
           <h1 className="text-xl font-semibold">Lig</h1>
         </div>
-        <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
+        <Suspense fallback={<ListSkeleton />}>
           <LeagueContent />
         </Suspense>
       </main>
