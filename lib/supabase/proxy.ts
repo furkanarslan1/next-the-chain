@@ -26,7 +26,32 @@ export async function updateSession(request: NextRequest) {
   );
 
   // Token'ı yeniler; createServerClient ile getClaims arasına kod koyma.
-  await supabase.auth.getClaims();
+  const { data } = await supabase.auth.getClaims();
+
+  // Sadece iyimser yönlendirme; asıl doğrulama lib/auth.ts içinde yapılır.
+  const { pathname } = request.nextUrl;
+  const isPublic = pathname === "/login" || pathname.startsWith("/auth");
+
+  if (!data?.claims && !isPublic) {
+    return redirectWithCookies(request, response, "/login");
+  }
+  if (data?.claims && pathname === "/login") {
+    return redirectWithCookies(request, response, "/");
+  }
 
   return response;
+}
+
+// Yenilenen oturum cookie'lerini yönlendirme yanıtına da taşır.
+function redirectWithCookies(
+  request: NextRequest,
+  from: NextResponse,
+  path: string,
+) {
+  const url = request.nextUrl.clone();
+  url.pathname = path;
+  url.search = "";
+  const redirect = NextResponse.redirect(url);
+  from.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
+  return redirect;
 }

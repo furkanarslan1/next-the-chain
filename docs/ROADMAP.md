@@ -51,7 +51,7 @@
 - [ ] Temel klasör yapısı, tema, mobile-first layout
 
 ### Faz 1 — Çekirdek (MVP)
-- Auth (Google/e-posta; iOS için ileride Apple ile giriş)
+- [x] Auth: Google ile giriş, zorunlu ve eşsiz kullanıcı adı (onboarding). Apple ile giriş mağaza öncesi eklenecek.
 - Veri modeli: `profiles`, `chains`, `check_ins`, haftalık joker takibi
 - Zincir oluşturma (konu, renk, tür: yap / bırak)
 - Günlük check-in RPC'si: joker, kırılma ve saat dilimi mantığı
