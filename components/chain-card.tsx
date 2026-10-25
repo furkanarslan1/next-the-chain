@@ -3,12 +3,28 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { ChainVisual } from "@/components/chain-visual";
-import { checkIn, reportRelapse } from "@/app/chains/actions";
+import { JokerInfo } from "@/components/joker-info";
+import {
+  archiveChain,
+  checkIn,
+  deleteChain,
+  reportRelapse,
+} from "@/app/chains/actions";
 import type { Chain } from "@/lib/chains";
 
-type Props = { chain: Chain; doneToday: boolean };
+type Props = {
+  chain: Chain;
+  doneToday: boolean;
+  jokersUsed: number;
+  jokerUsedYesterday: boolean;
+};
 
-export function ChainCard({ chain, doneToday }: Props) {
+export function ChainCard({
+  chain,
+  doneToday,
+  jokersUsed,
+  jokerUsedYesterday,
+}: Props) {
   const [pending, startTransition] = useTransition();
   const [celebrate, setCelebrate] = useState(false);
   const [error, setError] = useState<string>();
@@ -33,16 +49,55 @@ export function ChainCard({ chain, doneToday }: Props) {
     });
   }
 
+  function archive() {
+    startTransition(async () => {
+      const result = await archiveChain(chain.id);
+      if (!result.ok) setError(result.error);
+    });
+  }
+
+  function remove() {
+    if (!window.confirm(`"${chain.title}" kalıcı olarak silinecek. Emin misin?`)) {
+      return;
+    }
+    startTransition(async () => {
+      const result = await deleteChain(chain.id);
+      if (!result.ok) setError(result.error);
+    });
+  }
+
+  const jokersLeft = Math.max(chain.weekly_jokers - jokersUsed, 0);
+
   return (
     <article className="rounded-2xl border bg-card p-4">
-      <header className="flex items-baseline justify-between gap-3">
-        <h2 className="truncate font-medium" style={{ color: chain.color }}>
-          {chain.title}
-        </h2>
-        <p className="shrink-0 text-sm tabular-nums text-muted-foreground">
-          En uzun {chain.best_length}
-        </p>
+      <header className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="truncate font-medium" style={{ color: chain.color }}>
+            {chain.title}
+          </h2>
+          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+            <JokerStatus
+              color={chain.color}
+              weekly={chain.weekly_jokers}
+              left={jokersLeft}
+            />
+            <JokerInfo weekly={chain.weekly_jokers} left={jokersLeft} />
+          </div>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-3xl font-semibold leading-none tabular-nums">
+            {chain.current_length}
+          </p>
+          <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+            En uzun {chain.best_length}
+          </p>
+        </div>
       </header>
+      {jokerUsedYesterday && (
+        <p className="mt-2 text-xs text-amber-400">
+          Dün joker kullanıldı, zincirin korundu.
+        </p>
+      )}
 
       <div className="relative mx-auto my-3 aspect-square w-full max-w-72">
         <ChainVisual
@@ -52,20 +107,16 @@ export function ChainCard({ chain, doneToday }: Props) {
           justAdded={celebrate}
           className="size-full"
         />
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          {celebrate ? (
+        {celebrate && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
             <span
               className="plus-one text-3xl font-bold"
               style={{ color: chain.color }}
             >
               +1 zincir
             </span>
-          ) : (
-            <span className="text-4xl font-semibold tabular-nums">
-              {chain.current_length}
-            </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -100,6 +151,61 @@ export function ChainCard({ chain, doneToday }: Props) {
           Nüks oldu
         </button>
       )}
+      <details className="mt-3 text-center text-xs text-muted-foreground">
+        <summary className="cursor-pointer select-none">Yönet</summary>
+        <div className="mt-2 flex justify-center gap-4">
+          <button
+            type="button"
+            onClick={archive}
+            disabled={pending}
+            className="underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Arşivle
+          </button>
+          <button
+            type="button"
+            onClick={remove}
+            disabled={pending}
+            className="text-red-400 underline-offset-4 hover:underline"
+          >
+            Sil
+          </button>
+        </div>
+      </details>
     </article>
+  );
+}
+
+function JokerStatus({
+  color,
+  weekly,
+  left,
+}: {
+  color: string;
+  weekly: number;
+  left: number;
+}) {
+  return (
+    <span
+      className="flex items-center gap-2"
+      role="img"
+      aria-label={`Bu hafta ${weekly} jokerden ${left} tanesi kaldı`}
+    >
+      <span>Joker</span>
+      <span className="flex gap-1" aria-hidden>
+        {Array.from({ length: weekly }, (_, i) => (
+          <span
+            key={i}
+            className="size-2 rounded-full border"
+            style={
+              i < left ? { backgroundColor: color, borderColor: color } : undefined
+            }
+          />
+        ))}
+      </span>
+      <span className="tabular-nums">
+        {left}/{weekly} kaldı
+      </span>
+    </span>
   );
 }

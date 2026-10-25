@@ -27,7 +27,16 @@ export async function createChain(
   const { error } = await supabase
     .from("chains")
     .insert({ ...parsed.data, owner_id: user.id });
-  if (error) return { error: "Zincir oluşturulamadı, lütfen tekrar dene." };
+  if (error) {
+    const message = error.message;
+    return {
+      error: message.includes("chain_total_limit")
+        ? "Çok fazla zincir oluşturdun. Eski zincirlerini sil."
+        : message.includes("chain_limit")
+          ? "Zincir limitine ulaştın. Birini arşivle ya da planını yükselt."
+          : "Zincir oluşturulamadı, lütfen tekrar dene.",
+    };
+  }
 
   revalidatePath("/");
   redirect("/");
@@ -47,6 +56,25 @@ export async function reportRelapse(chainId: string): Promise<ActionResult> {
     p_chain_id: chainId,
   });
   if (error) return { ok: false, error: "Kaydedilemedi, tekrar dene." };
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function archiveChain(chainId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("chains")
+    .update({ archived_at: new Date().toISOString() })
+    .eq("id", chainId);
+  if (error) return { ok: false, error: "Arşivlenemedi, tekrar dene." };
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function deleteChain(chainId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.from("chains").delete().eq("id", chainId);
+  if (error) return { ok: false, error: "Silinemedi, tekrar dene." };
   revalidatePath("/");
   return { ok: true };
 }

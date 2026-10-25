@@ -6,7 +6,13 @@ import { TimezoneSync } from "@/components/timezone-sync";
 import { signOut } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { todayIn, type Chain } from "@/lib/chains";
+import {
+  planLimit,
+  todayIn,
+  weekStartOf,
+  yesterdayOf,
+  type Chain,
+} from "@/lib/chains";
 
 export default function Home() {
   return (
@@ -19,27 +25,31 @@ export default function Home() {
 }
 
 async function Dashboard() {
-  const { user, profile } = await requireProfile();
+  const { profile } = await requireProfile();
   const supabase = await createClient();
 
-  const { data: active } = await supabase
-    .from("chains")
-    .select("id")
-    .eq("owner_id", user.id)
-    .is("archived_at", null)
-    .order("created_at");
-
-  // Kaçırılan günleri joker hakkıyla kapatır veya zinciri sıfırlar.
-  const settled = await Promise.all(
-    (active ?? []).map((c) =>
-      supabase.rpc("settle_chain", { p_chain_id: c.id }),
-    ),
-  );
-  const chains = settled
-    .map((r) => r.data as Chain | null)
-    .filter((c): c is Chain => c !== null);
+  // Tüm aktif zincirleri tek çağrıda hesaplar: kaçırılan günleri joker hakkıyla
+  // kapatır ya da zinciri sıfırlar.
+  const { data } = await supabase.rpc("settle_my_chains");
+  const chains: Chain[] = data ?? [];
 
   const today = todayIn(profile.timezone);
+  const yesterday = yesterdayOf(today);
+  const limit = planLimit(profile.plan);
+
+  const { data: jokers } = await supabase
+    .from("check_ins")
+    .select("chain_id, day")
+    .eq("user_id", profile.id)
+    .eq("is_joker", true)
+    .gte("day", weekStartOf(today));
+
+  const jokersUsed = new Map<string, number>();
+  const jokerYesterday = new Set<string>();
+  for (const j of jokers ?? []) {
+    jokersUsed.set(j.chain_id, (jokersUsed.get(j.chain_id) ?? 0) + 1);
+    if (j.day === yesterday) jokerYesterday.add(j.chain_id);
+  }
 
   return (
     <>
@@ -71,21 +81,35 @@ async function Dashboard() {
             <ChainCard
               key={chain.id}
               chain={chain}
-              doneToday={chain.last_day === today && chain.current_length > 0}
+              doneToday={
+                chain.last_day !== null &&
+                chain.last_day >= today &&
+                chain.current_length > 0
+              }
+              jokersUsed={jokersUsed.get(chain.id) ?? 0}
+              jokerUsedYesterday={jokerYesterday.has(chain.id)}
             />
           ))}
         </div>
       )}
 
-      <Button
-        size="lg"
-        className="h-12 text-base"
-        variant={chains.length === 0 ? "default" : "outline"}
-        render={<Link href="/chains/new" />}
-        nativeButton={false}
-      >
-        Yeni zincir
-      </Button>
+      {chains.length >= limit ? (
+        <p className="rounded-2xl border border-dashed p-4 text-center text-sm text-muted-foreground">
+          {profile.plan === "max"
+            ? `En fazla ${limit} aktif zincirin olabilir. Yeni zincir için birini arşivle.`
+            : `${profile.plan === "pro" ? "Pro" : "Ücretsiz"} planda ${limit} zincir hakkın var. Daha fazlası için planını yükseltmen gerekir (yakında).`}
+        </p>
+      ) : (
+        <Button
+          size="lg"
+          className="h-12 text-base"
+          variant={chains.length === 0 ? "default" : "outline"}
+          render={<Link href="/chains/new" />}
+          nativeButton={false}
+        >
+          Yeni zincir
+        </Button>
+      )}
     </>
   );
 }

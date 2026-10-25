@@ -21,6 +21,8 @@
 | Sosyal | Kullanıcılar arkadaşlarıyla **ortak zincir** oluşturabilir; arkadaşlar arasında sıralama olur. |
 | Saat dilimi | "Gün" kullanıcının saat dilimine göre, sunucu tarafında hesaplanır. |
 | Ortak zincir | Zinciri açan kişi oluştururken arkadaşlarını ekler. Üyelerden biri/birkaçı o günü tamamlayamazsa **sıralamada geriye düşer** veya **"başaramayanlar"** olarak görünür. Ortak zincir tamamen kaybettirmez, kişisel ilerleme ayrı tutulur (detay Faz 2'de netleşecek). |
+| Planlar | Aktif zincir limiti: **free 2, pro 5, max 10** (`profiles.plan`; istemci değiştiremez, ödeme entegrasyonu Faz 3). Arşivlenenler sayılmaz, ama kullanıcı başına toplam en fazla 50 zincir satırı. |
+| Depolama | `check_ins` küçük satır (PK `(chain_id, day)`), 60 günden eski günler `chain_history`'de aylık bit maskesi olarak tutulur (check-in sırasında tembel sıkıştırma). Sıralama son 60 günü kapsar. |
 | Kırılma hesabı | Cron yok; kullanıcı uygulamayı açınca/check-in yapınca **lazy** hesaplanır. |
 
 ## Teknoloji

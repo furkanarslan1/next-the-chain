@@ -39,6 +39,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      chain_history: {
+        Row: {
+          chain_id: string
+          done_mask: number
+          joker_mask: number
+          month: string
+        }
+        Insert: {
+          chain_id: string
+          done_mask?: number
+          joker_mask?: number
+          month: string
+        }
+        Update: {
+          chain_id?: string
+          done_mask?: number
+          joker_mask?: number
+          month?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chain_history_chain_id_fkey"
+            columns: ["chain_id"]
+            isOneToOne: false
+            referencedRelation: "chains"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chains: {
         Row: {
           archived_at: string | null
@@ -101,26 +130,20 @@ export type Database = {
       check_ins: {
         Row: {
           chain_id: string
-          created_at: string
           day: string
-          id: number
-          kind: string
+          is_joker: boolean
           user_id: string
         }
         Insert: {
           chain_id: string
-          created_at?: string
           day: string
-          id?: never
-          kind: string
+          is_joker?: boolean
           user_id: string
         }
         Update: {
           chain_id?: string
-          created_at?: string
           day?: string
-          id?: never
-          kind?: string
+          is_joker?: boolean
           user_id?: string
         }
         Relationships: [
@@ -185,6 +208,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          plan: string
           timezone: string
           total_completed: number
           username: string | null
@@ -194,6 +218,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id: string
+          plan?: string
           timezone?: string
           total_completed?: number
           username?: string | null
@@ -203,6 +228,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          plan?: string
           timezone?: string
           total_completed?: number
           username?: string | null
@@ -240,6 +266,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      compact_chain: {
+        Args: { p_before: string; p_chain_id: string }
+        Returns: undefined
+      }
       friends_leaderboard: {
         Args: { p_from: string }
         Returns: {
@@ -250,6 +280,7 @@ export type Database = {
           username: string
         }[]
       }
+      plan_chain_limit: { Args: { p_plan: string }; Returns: number }
       report_relapse: {
         Args: { p_chain_id: string }
         Returns: {
@@ -298,6 +329,31 @@ export type Database = {
           to: "chains"
           isOneToOne: true
           isSetofReturn: false
+        }
+      }
+      settle_my_chains: {
+        Args: never
+        Returns: {
+          archived_at: string | null
+          best_length: number
+          break_count: number
+          color: string
+          created_at: string
+          current_length: number
+          id: string
+          kind: string
+          last_day: string | null
+          owner_id: string
+          title: string
+          total_completed: number
+          visibility: string
+          weekly_jokers: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "chains"
+          isOneToOne: false
+          isSetofReturn: true
         }
       }
       user_today: { Args: { p_user_id: string }; Returns: string }

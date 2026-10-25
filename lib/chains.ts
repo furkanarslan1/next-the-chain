@@ -19,6 +19,27 @@ export function todayIn(timeZone: string) {
   return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
 }
 
+// Veritabanındaki plan_chain_limit() ile aynı olmalı (asıl zorlama orada).
+export const PLAN_LIMITS = { free: 2, pro: 5, max: 10 } as const;
+export type Plan = keyof typeof PLAN_LIMITS;
+
+export const planLimit = (plan: string) =>
+  PLAN_LIMITS[plan as Plan] ?? PLAN_LIMITS.free;
+
+function shiftDay(day: string, delta: number) {
+  const d = new Date(`${day}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + delta);
+  return d.toISOString().slice(0, 10);
+}
+
+export const yesterdayOf = (today: string) => shiftDay(today, -1);
+
+// Haftanın Pazartesi'si; joker hakkı veritabanında da Pazartesi'de yenileniyor.
+export function weekStartOf(today: string) {
+  const dow = new Date(`${today}T00:00:00Z`).getUTCDay(); // 0 = Pazar
+  return shiftDay(today, -((dow + 6) % 7));
+}
+
 export type LinkPosition = { x: number; y: number; angle: number };
 
 // Halkaları merkezden dışa doğru Arşimet spiraline dizer.
