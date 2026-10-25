@@ -1,0 +1,82 @@
+# The Chain — Kararlar ve Yol Haritası
+
+## Ürün fikri
+
+İstikrar uygulaması ("zinciri kırma" yöntemi). Kullanıcı konulara göre zincirler açar
+(kitap okumak, sigarayı bırakmak, abur cuburu bırakmak...).
+
+- Her zincirde **tek bir aktif halka** yanıp söner. O günün içinde tamamlanırsa zincire bağlanır, sıradaki halka belirir.
+- Zincir büyüdükçe **yuvarlak/spiral** dizilir (az yer kaplasın diye).
+- Her konunun zinciri **farklı renkte**.
+- Halka tamamlanınca ekranda **+1 zincir** animasyonu çıkar.
+- Mobile-first (kullanımın ~%99'u mobil). Önce web (PWA), sonra React Native (Expo).
+
+## Verilen kararlar
+
+| Konu | Karar |
+|---|---|
+| Joker kuralı | **Haftalık sabit hak: haftada 2 gün** atlanabilir. Aylık ayrı limit yok. |
+| Kırılma cezası | Zincir kırılınca **sadece aktif zincir** sıfırlanır. Toplam/ömür boyu sayı düşmez. |
+| Sıralama | Genel (all-time) sıralama **yok**. **Haftalık/aylık ligler** ve **arkadaş sıralaması**. |
+| Sosyal | Kullanıcılar arkadaşlarıyla **ortak zincir** oluşturabilir; arkadaşlar arasında sıralama olur. |
+| Saat dilimi | "Gün" kullanıcının saat dilimine göre, sunucu tarafında hesaplanır. |
+| Kırılma hesabı | Cron yok; kullanıcı uygulamayı açınca/check-in yapınca **lazy** hesaplanır. |
+
+## Teknoloji
+
+- **Next.js 16** (App Router, `proxy.ts`, Cache Components), **React 19**, **TypeScript**
+- **Tailwind CSS v4**, **shadcn/ui**, **react-icons**
+- **Supabase** (Auth, Postgres, RLS, RPC/Edge Functions). **Prisma kullanılmıyor**; tipler `supabase gen types` ile.
+- **zod** (doğrulama), **motion** (web animasyonu)
+- Animasyon: yanıp sönme CSS ile, halka dizilimi SVG (gerekirse Skia), +1 için Lottie/Motion. **Three.js kullanılmıyor** (ağır, RN'e uygun değil).
+- Paket yöneticisi: pnpm
+
+## Mimari ilkeleri
+
+1. **İş mantığı Supabase'de** (Postgres fonksiyonları/RPC): check-in, joker kullanımı, zincir kırma. Web ve RN aynı backend'i çağırır. Next.js Server Actions RN ile paylaşılamaz, bu yüzden kural orada yaşamaz.
+2. **Güvenlik RLS ile**; istemci anahtarı sadece publishable key.
+3. Sıralama için kullanıcı/zincir satırlarında **sayaç alanları** (denormalize), indeks ve kısa süreli önbellek. Her istekte hesaplama yok.
+4. İleride **monorepo** (Turborepo): `packages/core` (tipler, zod şemaları, zincir yardımcıları) web ve Expo tarafından paylaşılır.
+5. RN'de shadcn ve react-icons çalışmaz; orada NativeWind + `lucide-react-native`.
+
+## Yol haritası
+
+### Faz 0 — Kurulum (bu branch: `chore/project-setup`)
+- [x] Next.js, Tailwind, shadcn, react-icons, zod, motion
+- [x] Supabase istemcileri (`lib/supabase/*`) ve oturum yenileyen `proxy.ts`
+- [ ] `.env.local` içine Supabase anahtarlarını ekle (`.env.example`'a bak)
+- [ ] Supabase CLI + migration klasörü, `gen types` script'i
+- [ ] Temel klasör yapısı, tema, mobile-first layout
+
+### Faz 1 — Çekirdek (MVP)
+- Auth (Google/e-posta; iOS için ileride Apple ile giriş)
+- Veri modeli: `profiles`, `chains`, `check_ins`, haftalık joker takibi
+- Zincir oluşturma (konu, renk, tür: yap / bırak)
+- Günlük check-in RPC'si: joker, kırılma ve saat dilimi mantığı
+- Zincir görselleştirme (spiral SVG, yanıp sönen aktif halka)
+- +1 animasyonu, profil sayfası (aktif zincir, ömür boyu toplam)
+
+### Faz 2 — Sosyal
+- Arkadaş ekleme/davet linki
+- Ortak zincirler
+- Arkadaş sıralaması, haftalık/aylık ligler
+- Hatırlatma bildirimleri (Web Push / PWA)
+
+### Faz 3 — Cila ve büyüme
+- PWA (ekrana ekle, offline kabuğu)
+- Kilometre taşı rozetleri (7/30/100 gün), paylaşılabilir zincir kartı
+- Isı haritası, haftalık özet
+- Performans ve maliyet gözden geçirme (Supabase Pro / barındırma planı)
+
+### Faz 4 — React Native (Expo)
+- Monorepo'ya geçiş, `packages/core` çıkarma
+- Expo + NativeWind, Skia/Reanimated ile zincir
+- Push bildirimleri, ana ekran widget'ı
+- Mağaza yayını (Apple $99/yıl, Google $25 tek sefer)
+
+## Açık sorular
+
+- Bırakma zincirlerinde "nüks oldu" akışının tam davranışı
+- Ortak zincirde bir kişi kırarsa ne olur (sadece o mu, herkes mi)
+- Lig yapısı (kaç kişilik gruplar, terfi/düşme)
+- Fotoğraf kanıtı olacak mı
