@@ -6,6 +6,7 @@ import { BottomNav } from "@/components/bottom-nav";
 import { CancelInviteButton } from "@/components/cancel-invite-button";
 import { GroupInvite } from "@/components/group-invite";
 import { GroupManage } from "@/components/group-manage";
+import { ReportUser } from "@/components/report-user";
 import { getFriends } from "@/lib/friends";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -108,6 +109,12 @@ async function GroupContent({ params }: { params: Promise<{ id: string }> }) {
               <span className="text-sm tabular-nums">
                 {row.chain_length} halka
               </span>
+              {row.member_id !== profile.id && row.member_username && (
+                <ReportUser
+                  userId={row.member_id}
+                  username={row.member_username}
+                />
+              )}
             </li>
           ))}
         </ol>

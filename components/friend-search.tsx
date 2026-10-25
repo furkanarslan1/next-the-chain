@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { sendFriendRequest } from "@/app/friends/actions";
+import { ReportUser } from "@/components/report-user";
 import { createClient } from "@/lib/supabase/client";
 
 type Result = {
@@ -28,8 +29,20 @@ export function FriendSearch() {
     if (q.length < 2) return;
     let cancelled = false;
     const timer = setTimeout(async () => {
-      const { data } = await createClient().rpc("search_users", { p_query: q });
-      if (!cancelled) setResults(data ?? []);
+      const { data, error } = await createClient().rpc("search_users", {
+        p_query: q,
+      });
+      if (cancelled) return;
+      if (error) {
+        setError(
+          error.message.includes("rate_limited")
+            ? "Çok hızlı arıyorsun. Bir dakika sonra tekrar dene."
+            : "Arama yapılamadı, tekrar dene.",
+        );
+        return;
+      }
+      setError(undefined);
+      setResults(data ?? []);
     }, 300);
     return () => {
       cancelled = true;
@@ -90,19 +103,24 @@ export function FriendSearch() {
                   </p>
                 )}
               </div>
-              {user.relation && RELATION_LABEL[user.relation] ? (
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  {RELATION_LABEL[user.relation]}
-                </span>
-              ) : (
-                <Button
-                  size="sm"
-                  disabled={pending}
-                  onClick={() => add(user.id)}
-                >
-                  {user.relation === "incoming" ? "Kabul et" : "Ekle"}
-                </Button>
-              )}
+              <div className="flex shrink-0 items-center gap-1">
+                {user.relation && RELATION_LABEL[user.relation] ? (
+                  <span className="text-xs text-muted-foreground">
+                    {RELATION_LABEL[user.relation]}
+                  </span>
+                ) : (
+                  <Button
+                    size="sm"
+                    disabled={pending}
+                    onClick={() => add(user.id)}
+                  >
+                    {user.relation === "incoming" ? "Kabul et" : "Ekle"}
+                  </Button>
+                )}
+                {user.username && (
+                  <ReportUser userId={user.id} username={user.username} />
+                )}
+              </div>
             </li>
           ))}
         </ul>

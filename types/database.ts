@@ -39,6 +39,21 @@ export type Database = {
   }
   public: {
     Tables: {
+      blocked_words: {
+        Row: {
+          mode: string
+          word: string
+        }
+        Insert: {
+          mode?: string
+          word: string
+        }
+        Update: {
+          mode?: string
+          word?: string
+        }
+        Relationships: []
+      }
       chain_group_members: {
         Row: {
           chain_id: string | null
@@ -305,6 +320,7 @@ export type Database = {
           reminder_hour: number
           reminders_enabled: boolean
           timezone: string
+          timezone_changed_at: string | null
           total_completed: number
           username: string | null
         }
@@ -319,6 +335,7 @@ export type Database = {
           reminder_hour?: number
           reminders_enabled?: boolean
           timezone?: string
+          timezone_changed_at?: string | null
           total_completed?: number
           username?: string | null
         }
@@ -333,6 +350,7 @@ export type Database = {
           reminder_hour?: number
           reminders_enabled?: boolean
           timezone?: string
+          timezone_changed_at?: string | null
           total_completed?: number
           username?: string | null
         }
@@ -367,6 +385,77 @@ export type Database = {
           {
             foreignKeyName: "push_subscriptions_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rate_limits: {
+        Row: {
+          action: string
+          count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          action: string
+          count?: number
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          action?: string
+          count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rate_limits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          created_at: string
+          id: number
+          note: string | null
+          reason: string
+          reported_id: string
+          reporter_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: never
+          note?: string | null
+          reason: string
+          reported_id: string
+          reporter_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: never
+          note?: string | null
+          reason?: string
+          reported_id?: string
+          reporter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_reported_id_fkey"
+            columns: ["reported_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -408,6 +497,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      check_rate_limit: {
+        Args: { p_action: string; p_max: number; p_window: string }
+        Returns: undefined
       }
       compact_chain: {
         Args: { p_before: string; p_chain_id: string }
@@ -483,6 +576,7 @@ export type Database = {
           title: string
         }[]
       }
+      normalize_username: { Args: { p_username: string }; Returns: string }
       plan_chain_limit: { Args: { p_plan: string }; Returns: number }
       report_relapse: {
         Args: { p_chain_id: string }
@@ -510,6 +604,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      report_user: {
+        Args: { p_note?: string; p_reason: string; p_user_id: string }
+        Returns: undefined
+      }
       respond_group_invite: {
         Args: { p_accept: boolean; p_group_id: string }
         Returns: undefined
@@ -519,6 +617,16 @@ export type Database = {
         Returns: undefined
       }
       search_users: {
+        Args: { p_query: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          relation: string
+          username: string
+        }[]
+      }
+      search_users_impl: {
         Args: { p_query: string }
         Returns: {
           avatar_url: string
@@ -608,6 +716,7 @@ export type Database = {
         }
       }
       user_today: { Args: { p_user_id: string }; Returns: string }
+      username_allowed: { Args: { p_username: string }; Returns: boolean }
       users_to_remind: {
         Args: { p_limit?: number; p_now?: string }
         Returns: {

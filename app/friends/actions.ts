@@ -12,6 +12,7 @@ const SEND_ERRORS: Record<string, string> = {
   friend_limit: "Arkadaş limitine ulaştın.",
   user_not_found: "Kullanıcı bulunamadı.",
   self_request: "Kendine istek gönderemezsin.",
+  rate_limited: "Çok fazla istek gönderdin. Bir süre sonra tekrar dene.",
 };
 
 export async function sendFriendRequest(userId: string): Promise<FriendResult> {

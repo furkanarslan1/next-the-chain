@@ -32,7 +32,9 @@ export async function saveUsername(
       error:
         error.code === "23505"
           ? "Bu kullanıcı adı alınmış, başka bir tane dene."
-          : "Kaydedilemedi, lütfen tekrar dene.",
+          : error.message.includes("username_blocked")
+            ? "Bu kullanıcı adı kullanılamaz, başka bir tane dene."
+            : "Kaydedilemedi, lütfen tekrar dene.",
       value: raw,
     };
   }
