@@ -9,7 +9,9 @@ import { GroupInvite } from "@/components/group-invite";
 import { GroupManage } from "@/components/group-manage";
 import { ReportUser } from "@/components/report-user";
 import { getFriends } from "@/lib/friends";
+import { RankMini } from "@/components/profile/rank-avatar";
 import { requireProfile } from "@/lib/auth";
+import { rankFor } from "@/lib/ranks";
 import { createClient } from "@/lib/supabase/server";
 
 export default function GroupPage(props: PageProps<"/groups/[id]">) {
@@ -88,6 +90,7 @@ async function GroupContent({ params }: { params: Promise<{ id: string }> }) {
               <span className="w-6 text-center text-sm tabular-nums text-muted-foreground">
                 {i + 1}
               </span>
+              <RankMini rank={rankFor(row.member_active_days).current.index} name={rankFor(row.member_active_days).current.name} size={30} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">
                   @{row.member_username}

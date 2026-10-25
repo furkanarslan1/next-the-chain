@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 
+import { RankMini } from "@/components/profile/rank-avatar";
+import { rankFor } from "@/lib/ranks";
+
 export type LeaderboardRow = {
   user_id: string;
   username: string | null;
   completed: number;
+  active_days: number;
 };
 
 type Props = {
@@ -59,6 +63,7 @@ export function Leaderboard({ week, month, meId }: Props) {
                 <span className="w-6 text-center text-sm tabular-nums text-muted-foreground">
                   {i + 1}
                 </span>
+                <RankMini rank={rankFor(row.active_days).current.index} name={rankFor(row.active_days).current.name} size={28} />
                 <span className="min-w-0 flex-1 truncate font-medium">
                   @{row.username}
                   {me && (

@@ -6,7 +6,9 @@ import { BottomNav } from "@/components/bottom-nav";
 import { Button } from "@/components/ui/button";
 import { LeagueVisibility } from "@/components/league-visibility";
 import { ReportUser } from "@/components/report-user";
+import { RankMini } from "@/components/profile/rank-avatar";
 import { requireProfile } from "@/lib/auth";
+import { rankFor } from "@/lib/ranks";
 import { OUTCOME_LABEL, closesIn, tierInfo } from "@/lib/leagues";
 import { createClient } from "@/lib/supabase/server";
 
@@ -127,6 +129,7 @@ async function LeagueContent() {
                 <span className="w-6 text-center text-sm tabular-nums text-muted-foreground">
                   {row.lg_place}
                 </span>
+                <RankMini rank={rankFor(row.lg_active_days).current.index} name={rankFor(row.lg_active_days).current.name} size={30} />
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <p className="truncate text-sm font-medium">
                     {row.lg_username ? (

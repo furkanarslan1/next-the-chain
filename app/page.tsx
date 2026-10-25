@@ -13,6 +13,9 @@ import { BADGES } from "@/lib/badges";
 import { InstallHost } from "@/components/pwa/install-host";
 import { HomeSkeleton } from "@/components/skeletons";
 import { SkyTint } from "@/components/sky-tint";
+import { RankAvatar } from "@/components/profile/rank-avatar";
+import { RankUpDialog } from "@/components/profile/rank-up-dialog";
+import { rankFor } from "@/lib/ranks";
 import { TourHost } from "@/components/tour/tour-host";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { TodaySummary } from "@/components/today-summary";
@@ -104,6 +107,9 @@ async function Dashboard() {
       chain.last_day !== null && chain.last_day >= today && chain.current_length > 0,
   );
   const doneCount = doneFlags.filter(Boolean).length;
+  const rank = rankFor(profile.active_days);
+  // Yeni rütbe kutlaması; yeni rozet penceresiyle çakışmasın diye o açıkken ertelenir.
+  const rankUp = rank.current.index > profile.rank_seen && newBadgeKeys.length === 0;
   const atLimit = chains.length >= limit;
 
   return (
@@ -111,9 +117,21 @@ async function Dashboard() {
       <TimezoneSync current={profile.timezone} />
       <SkyTint colors={chains.map((c) => c.color)} />
 
-      <header className="space-y-0.5">
-        <p className="text-sm text-muted-foreground">{greetingFor(profile.timezone)}</p>
-        <h1 className="text-2xl font-semibold tracking-tight">@{profile.username}</h1>
+      <header className="flex items-center justify-between gap-3">
+        <div className="min-w-0 space-y-0.5">
+          <p className="text-sm text-muted-foreground">{greetingFor(profile.timezone)}</p>
+          <h1 className="truncate text-2xl font-semibold tracking-tight">@{profile.username}</h1>
+          <p className="text-xs" style={{ color: rank.current.color }}>
+            {rank.current.name}
+          </p>
+        </div>
+        <Link
+          href="/profile"
+          aria-label={`Profilim, rütbe: ${rank.current.name}`}
+          className="shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <RankAvatar rank={rank.current.index} size={56} />
+        </Link>
       </header>
 
       <TodaySummary done={doneCount} total={chains.length} />
@@ -147,10 +165,11 @@ async function Dashboard() {
       <GroupsToday groups={groupsToday ?? []} />
 
       <NewBadgeDialog keys={newBadgeKeys} />
+      {rankUp && <RankUpDialog rank={rank.current.index} />}
       <TourHost
         stage={profile.tour_stage}
         hasChains={chains.length > 0}
-        blocked={newBadgeKeys.length > 0}
+        blocked={newBadgeKeys.length > 0 || rankUp}
       />
 
       <section className="space-y-3">

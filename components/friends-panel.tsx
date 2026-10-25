@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { LuChevronRight, LuUserPlus } from "react-icons/lu";
+import { RankMini } from "@/components/profile/rank-avatar";
+import { rankFor } from "@/lib/ranks";
 
 export type TodayRow = { ft_user_id: string; ft_username: string; ft_state: string };
-export type RankRow = { user_id: string; username: string | null; completed: number };
+export type RankRow = { user_id: string; username: string | null; completed: number; active_days: number };
 
 type Props = {
   today: TodayRow[];
@@ -144,6 +146,7 @@ function Row({ place, row, me }: { place: number; row: RankRow; me: boolean }) {
   return (
     <li className={`flex items-center gap-3 px-3 py-2 ${me ? "bg-white/5" : ""}`}>
       <span className="w-5 text-center text-sm tabular-nums text-muted-foreground">{place}</span>
+      <RankMini rank={rankFor(row.active_days).current.index} name={rankFor(row.active_days).current.name} size={26} />
       <span className="min-w-0 flex-1 truncate text-sm font-medium">
         @{row.username}
         {me && <span className="ml-2 text-xs font-normal text-muted-foreground">sen</span>}

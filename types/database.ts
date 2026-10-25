@@ -465,6 +465,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          active_days: number
           avatar_url: string | null
           badges_synced_at: string | null
           created_at: string
@@ -479,6 +480,7 @@ export type Database = {
           notify_social: boolean
           plan: string
           pwa_installed_at: string | null
+          rank_seen: number
           reminder_hour: number
           reminders_enabled: boolean
           risk_reminders_enabled: boolean
@@ -490,6 +492,7 @@ export type Database = {
           username: string | null
         }
         Insert: {
+          active_days?: number
           avatar_url?: string | null
           badges_synced_at?: string | null
           created_at?: string
@@ -504,6 +507,7 @@ export type Database = {
           notify_social?: boolean
           plan?: string
           pwa_installed_at?: string | null
+          rank_seen?: number
           reminder_hour?: number
           reminders_enabled?: boolean
           risk_reminders_enabled?: boolean
@@ -515,6 +519,7 @@ export type Database = {
           username?: string | null
         }
         Update: {
+          active_days?: number
           avatar_url?: string | null
           badges_synced_at?: string | null
           created_at?: string
@@ -529,6 +534,7 @@ export type Database = {
           notify_social?: boolean
           plan?: string
           pwa_installed_at?: string | null
+          rank_seen?: number
           reminder_hour?: number
           reminders_enabled?: boolean
           risk_reminders_enabled?: boolean
@@ -742,6 +748,7 @@ export type Database = {
       friends_leaderboard: {
         Args: { p_from: string }
         Returns: {
+          active_days: number
           avatar_url: string
           completed: number
           display_name: string
@@ -784,6 +791,7 @@ export type Database = {
         Returns: {
           best_chain_length: number
           chain_length: number
+          member_active_days: number
           member_display_name: string
           member_id: string
           member_username: string
@@ -809,6 +817,7 @@ export type Database = {
       league_standings: {
         Args: never
         Returns: {
+          lg_active_days: number
           lg_demote: number
           lg_done: number
           lg_expected: number
@@ -855,6 +864,14 @@ export type Database = {
           gt_group_id: string
           gt_title: string
           gt_total: number
+        }[]
+      }
+      my_heatmap: {
+        Args: { p_days?: number }
+        Returns: {
+          hm_day: string
+          hm_done: number
+          hm_joker: number
         }[]
       }
       my_league_history: {
@@ -930,6 +947,7 @@ export type Database = {
         }[]
       }
       send_friend_request: { Args: { p_addressee: string }; Returns: string }
+      set_rank_seen: { Args: { p_rank: number }; Returns: undefined }
       set_tour_stage: { Args: { p_stage: number }; Returns: undefined }
       settle_chain: {
         Args: { p_chain_id: string }

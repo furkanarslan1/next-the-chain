@@ -54,6 +54,19 @@ async function SettingsContent() {
       </section>
 
       <section className="space-y-3">
+        <h2 className="font-medium">Hesap</h2>
+        <Link
+          href="/profile"
+          className="flex items-center justify-between rounded-xl border p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Profilim, rütbem ve ısı haritam
+          <span aria-hidden className="text-muted-foreground">
+            ›
+          </span>
+        </Link>
+      </section>
+
+      <section className="space-y-3">
         <h2 className="font-medium">Zincirler</h2>
         <Link
           href="/archive"

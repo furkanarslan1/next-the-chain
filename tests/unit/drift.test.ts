@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BADGE_KEYS, BADGES } from "@/lib/badges";
 import { PLAN_LIMITS } from "@/lib/chains";
+import { RANKS } from "@/lib/ranks";
 import { chainSteps, introSteps } from "@/components/tour/steps";
 
 // Kod ile SQL arasında sabitlerin birbirinden sapmasını yakalar.
@@ -73,5 +74,23 @@ describe("tanıtım turu: her hedef sayfada işaretli", () => {
         new RegExp(`data-tour=(?:"${name}"|\\{[^}]*"${name}"[^}]*\\})`),
       );
     }
+  });
+});
+
+describe("rütbeler: avatar her rütbeyi çizer", () => {
+  const source = read("components/profile/rank-avatar.tsx");
+
+  it("gövde ve arka halka renk dizileri rütbe sayısıyla aynı", () => {
+    for (const name of ["BODY", "BACK"]) {
+      const line = source.match(new RegExp(`const ${name} = \\[([^\\]]*)\\]`))?.[1] ?? "";
+      const colors = [...line.matchAll(/#[0-9a-fA-F]{6}/g)];
+      expect(colors, name).toHaveLength(RANKS.length);
+    }
+  });
+
+  it("her rütbe için bir aksesuar tanımlı (son rütbe default)", () => {
+    const cases = [...source.matchAll(/case (\d+):/g)].map((m) => Number(m[1]));
+    expect(cases).toEqual(Array.from({ length: RANKS.length - 1 }, (_, i) => i));
+    expect(source).toContain("default:");
   });
 });
