@@ -62,9 +62,11 @@
 - [ ] Profil sayfası, joker göstergesi, zincir arşivleme/silme, zincir sayısı limiti
 
 ### Faz 2 — Sosyal
-- Arkadaş ekleme/davet linki
+- [x] Arkadaş arama (kullanıcı adı), istek gönderme/kabul/reddet, arkadaş listesi
+- [ ] Davet linki
 - Ortak zincirler
-- Arkadaş sıralaması, haftalık/aylık ligler
+- [x] Arkadaş sıralaması (haftalık/aylık)
+- [ ] Ligler (terfi/düşme)
 - Hatırlatma bildirimleri (Web Push / PWA)
 
 ### Faz 3 — Cila ve büyüme

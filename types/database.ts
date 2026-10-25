@@ -206,6 +206,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          discoverable: boolean
           display_name: string | null
           id: string
           plan: string
@@ -216,6 +217,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          discoverable?: boolean
           display_name?: string | null
           id: string
           plan?: string
@@ -226,6 +228,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          discoverable?: boolean
           display_name?: string | null
           id?: string
           plan?: string
@@ -306,6 +309,17 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      search_users: {
+        Args: { p_query: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          id: string
+          relation: string
+          username: string
+        }[]
+      }
+      send_friend_request: { Args: { p_addressee: string }; Returns: string }
       settle_chain: {
         Args: { p_chain_id: string }
         Returns: {

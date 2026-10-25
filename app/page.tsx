@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { BottomNav } from "@/components/bottom-nav";
 import { ChainCard } from "@/components/chain-card";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { signOut } from "@/app/actions";
@@ -16,11 +17,14 @@ import {
 
 export default function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 py-8">
-      <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
-        <Dashboard />
-      </Suspense>
-    </main>
+    <>
+      <main className="mx-auto flex w-full max-w-md flex-1 flex-col gap-6 px-4 pt-8 pb-28">
+        <Suspense fallback={<p className="text-muted-foreground">Yükleniyor…</p>}>
+          <Dashboard />
+        </Suspense>
+      </main>
+      <BottomNav active="home" />
+    </>
   );
 }
 
