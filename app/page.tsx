@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/bottom-nav";
 import { ChainCard } from "@/components/chain-card";
 import { BadgesTile } from "@/components/badges-tile";
+import { FriendsPanel } from "@/components/friends-panel";
+import { GroupsToday } from "@/components/groups-today";
 import { LeagueCard } from "@/components/league-card";
 import { NewBadgeDialog } from "@/components/new-badge-dialog";
 import { BADGES } from "@/lib/badges";
 import { SkyTint } from "@/components/sky-tint";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { TodaySummary } from "@/components/today-summary";
+import { WeekStrip, type DayState } from "@/components/week-strip";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { closesIn } from "@/lib/leagues";
@@ -18,6 +21,7 @@ import {
   greetingFor,
   planLimit,
   todayIn,
+  weekDates,
   weekStartOf,
   yesterdayOf,
   type Chain,
@@ -49,25 +53,48 @@ async function Dashboard() {
   const yesterday = yesterdayOf(today);
   const limit = planLimit(profile.plan);
 
-  const [{ data: jokers }, { data: standings }, { data: badges }] = await Promise.all([
+  const weekStart = weekStartOf(today);
+  const [
+    { data: weekCheckIns },
+    { data: standings },
+    { data: badges },
+    { data: ranking },
+    { data: friendsToday },
+    { data: groupsToday },
+  ] = await Promise.all([
     supabase
       .from("check_ins")
-      .select("chain_id, day")
+      .select("chain_id, day, is_joker")
       .eq("user_id", profile.id)
-      .eq("is_joker", true)
-      .gte("day", weekStartOf(today)),
+      .gte("day", weekStart),
     supabase.rpc("league_standings"),
     supabase.rpc("my_badges"),
+    supabase.rpc("friends_leaderboard", { p_from: weekStart }),
+    supabase.rpc("friends_today"),
+    supabase.rpc("my_groups_today"),
   ]);
   const myLeague = (standings ?? []).find((row) => row.lg_is_me);
   const newBadgeKeys = (badges ?? []).filter((b) => b.bd_is_new).map((b) => b.bd_badge);
 
   const jokersUsed = new Map<string, number>();
   const jokerYesterday = new Set<string>();
-  for (const j of jokers ?? []) {
+  for (const j of (weekCheckIns ?? []).filter((c) => c.is_joker)) {
     jokersUsed.set(j.chain_id, (jokersUsed.get(j.chain_id) ?? 0) + 1);
     if (j.day === yesterday) jokerYesterday.add(j.chain_id);
   }
+
+  // Haftalık şerit: o gün var olan zincirlerin hepsi tamamsa dolu, bir kısmı tamamsa yarım.
+  const weekDays = weekDates(weekStart).map((day) => {
+    let state: DayState;
+    if (day > today) {
+      state = "future";
+    } else {
+      const eligible = chains.filter((c) => c.created_at.slice(0, 10) <= day).length;
+      const done = (weekCheckIns ?? []).filter((c) => c.day === day && !c.is_joker).length;
+      state = eligible > 0 && done >= eligible ? "full" : done > 0 ? "partial" : "none";
+    }
+    return { state, today: day === today };
+  });
 
   const doneFlags = chains.map(
     (chain) =>
@@ -87,6 +114,7 @@ async function Dashboard() {
       </header>
 
       <TodaySummary done={doneCount} total={chains.length} />
+      {chains.length > 0 && <WeekStrip days={weekDays} />}
 
       <div className="grid grid-cols-2 gap-3">
         {myLeague && (
@@ -100,6 +128,16 @@ async function Dashboard() {
         )}
         <BadgesTile earned={(badges ?? []).length} total={BADGES.length} wide={!myLeague} />
       </div>
+
+      <FriendsPanel
+        today={friendsToday ?? []}
+        ranking={ranking ?? []}
+        meId={profile.id}
+        shareToday={profile.share_today}
+        friendCount={Math.max((ranking ?? []).length - 1, 0)}
+      />
+
+      <GroupsToday groups={groupsToday ?? []} />
 
       <NewBadgeDialog keys={newBadgeKeys} />
 

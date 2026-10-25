@@ -4,6 +4,7 @@ import { FriendActions } from "@/components/friend-actions";
 import { FriendSearch } from "@/components/friend-search";
 import { Leaderboard } from "@/components/leaderboard";
 import { PrivacyToggle } from "@/components/privacy-toggle";
+import { ShareTodayToggle } from "@/components/share-today-toggle";
 import { requireProfile } from "@/lib/auth";
 import { todayIn, weekStartOf } from "@/lib/chains";
 import { createClient } from "@/lib/supabase/server";
@@ -87,7 +88,10 @@ async function FriendsContent() {
         <PeopleSection title="Gönderilen istekler" kind="outgoing" items={outgoing} />
       )}
 
-      <PrivacyToggle discoverable={profile.discoverable} />
+      <div id="gizlilik" className="space-y-4">
+        <PrivacyToggle discoverable={profile.discoverable} />
+        <ShareTodayToggle enabled={profile.share_today} />
+      </div>
     </>
   );
 }

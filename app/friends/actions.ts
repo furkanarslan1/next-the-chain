@@ -66,3 +66,18 @@ export async function setDiscoverable(value: boolean): Promise<FriendResult> {
   revalidatePath("/friends");
   return { ok: true };
 }
+
+export async function setShareToday(value: boolean): Promise<FriendResult> {
+  const user = await getUser();
+  if (!user) return { ok: false, error: "Oturum süresi doldu." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ share_today: value })
+    .eq("id", user.id);
+  if (error) return { ok: false, error: "Kaydedilemedi, tekrar dene." };
+  revalidatePath("/friends");
+  revalidatePath("/");
+  return { ok: true };
+}

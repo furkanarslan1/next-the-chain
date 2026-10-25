@@ -456,6 +456,7 @@ export type Database = {
           reminder_hour: number
           reminders_enabled: boolean
           risk_reminders_enabled: boolean
+          share_today: boolean
           timezone: string
           timezone_changed_at: string | null
           total_completed: number
@@ -477,6 +478,7 @@ export type Database = {
           reminder_hour?: number
           reminders_enabled?: boolean
           risk_reminders_enabled?: boolean
+          share_today?: boolean
           timezone?: string
           timezone_changed_at?: string | null
           total_completed?: number
@@ -498,6 +500,7 @@ export type Database = {
           reminder_hour?: number
           reminders_enabled?: boolean
           risk_reminders_enabled?: boolean
+          share_today?: boolean
           timezone?: string
           timezone_changed_at?: string | null
           total_completed?: number
@@ -713,6 +716,14 @@ export type Database = {
           username: string
         }[]
       }
+      friends_today: {
+        Args: never
+        Returns: {
+          ft_state: string
+          ft_user_id: string
+          ft_username: string
+        }[]
+      }
       group_friend_ids: {
         Args: { p_ids: string[]; p_me: string }
         Returns: string[]
@@ -800,6 +811,16 @@ export type Database = {
           kind: string
           member_count: number
           title: string
+        }[]
+      }
+      my_groups_today: {
+        Args: never
+        Returns: {
+          gt_color: string
+          gt_done: number
+          gt_group_id: string
+          gt_title: string
+          gt_total: number
         }[]
       }
       my_league_history: {

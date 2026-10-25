@@ -103,3 +103,10 @@ export function greetingFor(timeZone: string) {
   if (hour < 18) return "İyi günler";
   return "İyi akşamlar";
 }
+
+// Haftanın 7 günü (Pazartesi'den Pazar'a), YYYY-MM-DD.
+export function weekDates(weekStart: string) {
+  return Array.from({ length: 7 }, (_, i) => shiftDay(weekStart, i));
+}
+
+export const WEEKDAY_LABELS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"] as const;
