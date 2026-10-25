@@ -4,8 +4,8 @@ Bu belge uygulamanın **nasıl çalıştığını** anlatır: kurallar, sınırl
 güvenlik ve işletim. Kararların gerekçeleri ve yol haritası için `ROADMAP.md`,
 bildirim kurulumu için `NOTIFICATIONS.md`'ye bak.
 
-> Durum notu: Ligler (bölüm 9) `feat/leagues` branch'inde hazırlandı. Migration'ı
-> uzak veritabanına uygulanana kadar canlıda **yok**. Diğer bölümler canlıdır.
+> Durum notu: Ligler (bölüm 9) veritabanında canlıdır; arayüzü `feat/leagues` branch'i merge edilince
+> yayında olur.
 
 ---
 
@@ -188,7 +188,7 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 | `blocked_words` | Yasaklı kullanıcı adı kelimeleri (panelden düzenlenebilir) |
 | `rate_limits` | Oran sınırlama sayaçları |
 | `reports` | Kullanıcı bildirimleri |
-| `league_members`, `league_results` | Lig üyelikleri ve sonuçları (bkz. bölüm 9) |
+| `league_members`, `league_results`, `league_deleted_stats` | Lig üyelikleri, sonuçları ve silinen zincirlerin haftalık katkısı (bkz. bölüm 9) |
 
 ### 8.2 Depolama tasarrufu
 - `check_ins` satırı küçük tutulur (`id`, `created_at`, metin `kind` yok; tek birincil anahtar indeksi).
@@ -197,7 +197,7 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 - Bu yüzden **sıralamalar sadece son 60 günü** kapsar; haftalık/aylık görünüm bunun içindedir.
 - Isı haritası ileride bu maskelerden çizilecek.
 
-## 9. Ligler (`feat/leagues`, henüz canlı değil)
+## 9. Ligler
 
 - **Ligler:** Bronz, Gümüş, Altın, Platin, Elmas (`league_tier` 1-5). Herkes Bronz'da başlar.
 - **Hafta:** Pazartesi 00:00 UTC'de başlar. Günler yine kullanıcının **yerel** tarihidir.
@@ -216,8 +216,15 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 - **Gizlilik (`league_visible`, varsayılan açık):** Kapalıysa yabancılara adı yerine "Gizli oyuncu"
   görünür; yarışmaya devam eder.
 - Sonuçlar ~11 hafta saklanır.
-- **Bilinen açık:** Hafta sonunda başarısız olunan bir zinciri **silmek** oranı yükseltir (arşivlemede
-  bu yok). Ligde ödül olmadığı için şimdilik kabul edildi.
+- **Zincir silme hilesi kapalı:** Zincir silinmeden önce, kapanmamış lig haftalarındaki "yapılan / yapılması
+  gereken" sayıları `league_deleted_stats`'e yazılır ve puana dahil edilir. Hafta kapanınca o satırlar silinir.
+  Hesap silinirken tetikleyici atlanır (profil zaten gitmiştir).
+- **Arayüz:** Ana sayfada küçük lig kartı (lig, sıra, yüzde, kalan süre) `/league` sayfasına gider. Orada kendi
+  liginin ve grubunun sıralaması, terfi/düşme bölgeleri, "Lig nasıl çalışır?", son haftaların sonuçları ve
+  "Ligde adım görünsün" anahtarı vardır. Diğer oyuncuların yanında bildirme bayrağı bulunur.
+- **Canlı sıralama notu:** Başkalarının henüz uygulamayı açmamış olması, jokerleri işlenmediği için puanlarını
+  geçici olarak düşük gösterebilir; haftalık kapanışta herkesin zinciri önce işlenir, nihai sonuç doğrudur.
+- Lig tablolarına istemci erişimi yoktur; her şey `league_standings()` ve `my_league_history()` RPC'leriyle.
 
 ## 10. Güvenlik modeli
 
@@ -268,7 +275,7 @@ public/         sw.js, ikonlar
 7. `notifications` - abonelikler, hatırlatma ayarları, `users_to_remind`
 8. `polish` - arşivden geri alma limiti, davet iptali
 9. `abuse_guards` - saat dilimi sınırı, yasaklı kelimeler, oran sınırı, bildirme
-10. `leagues` - ligler *(henüz uygulanmadı)*
+10. `leagues` - ligler
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -286,7 +293,8 @@ public/         sw.js, ikonlar
 - Vercel (Hobby): `https://next-the-chain.vercel.app`, `main` branch'inden otomatik dağıtılır.
 - Supabase Auth → URL Configuration'da Site URL ve `/auth/callback` yönlendirmesi tanımlı olmalı;
   Google'da Authorized JavaScript origins'e site adresi eklenir.
-- Zamanlayıcı: `chain-reminders` (10 dk) ve `league-weekly` (Pazartesi 12:00 UTC) `pg_cron` işleri.
+- Zamanlayıcı: `chain-reminders` (10 dk, elle kuruldu) ve `league-weekly` (Pazartesi 12:00 UTC,
+  lig migration'ı kurdu) `pg_cron` işleri. `select jobname, schedule, active from cron.job;` ile bakılır.
 
 ### Çalışma düzeni
 Her özellik için ayrı branch (`feat/...`); `main`'e doğrudan değişiklik yapılmaz. Migration'lar

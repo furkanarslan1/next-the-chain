@@ -69,7 +69,7 @@
 - [x] Ortak zincirler (her üyenin kendi zinciri, grup sıralaması, "başaramayanlar")
 - [ ] Gruba sonradan davet, üye çıkarma
 - [x] Arkadaş sıralaması (haftalık/aylık)
-- [ ] Ligler (terfi/düşme)
+- [x] Ligler (haftalık, terfi/düşme)
 - Hatırlatma bildirimleri (Web Push / PWA)
 
 ### Faz 3 — Cila ve büyüme
