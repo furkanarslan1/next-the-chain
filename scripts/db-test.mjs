@@ -42,16 +42,21 @@ for (const file of files) {
   failed++;
   const reason = out.match(/FAIL:[^"\\]*/)?.[0] ?? out.match(/ERROR:[^"\\]*/)?.[0] ?? out.slice(0, 300);
   console.log(`FAIL  ${file}\n      ${reason.trim()}`);
+  // CI'da ham çıktıyı da yaz (yerel veritabanı çıktı biçimi uzaktakinden farklı olabilir).
+  if (process.env.CI) console.log(out.slice(0, 1500));
 }
 
-// Testler kendilerini geri almalı: sahte kullanıcı kalmadıysa temiz.
-const leftovers = query([
-  "select count(*) as leftover from auth.users where email like '%@test.invalid'",
+// Testler kendilerini geri almalı: sahte kullanıcı kalmadıysa temiz. Kontrol, çıktı biçimine
+// (yerel/uzak farkı) bağlı olmasın diye "CLEAN" / "LEFTOVER" işaretleriyle yapılır.
+const cleanup = query([
+  "do $$ begin if exists (select 1 from auth.users where email like '%@test.invalid') then raise exception 'LEFTOVER'; end if; raise exception 'CLEAN'; end $$",
 ]);
-const count = Number(leftovers.match(/"leftover":\s*"?(\d+)/)?.[1] ?? NaN);
-if (count !== 0) {
+if (!cleanup.includes("CLEAN")) {
   failed++;
-  console.log(`FAIL  temizlik: ${Number.isNaN(count) ? "kontrol edilemedi" : `${count} sahte kullanıcı kaldı`}`);
+  console.log(
+    `FAIL  temizlik: ${cleanup.includes("LEFTOVER") ? "sahte kullanıcı kaldı" : "kontrol edilemedi"}`,
+  );
+  if (process.env.CI) console.log(cleanup.slice(0, 1500));
 }
 
 console.log(failed === 0 ? `\n${files.length} test dosyası geçti.` : `\n${failed} sorun var.`);

@@ -15,7 +15,7 @@ permissions:
 jobs:
   checks:
     name: Tip, lint, birim test, build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Gizli anahtar gerekmez: build yalnızca herkese açık ortam değişkenlerinin varlığına bakar.
     env:
       NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
@@ -36,7 +36,7 @@ jobs:
 
   db-tests:
     name: Veritabanı testleri (yerel Supabase)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Bu iş henüz bir GitHub çalıştırmasında doğrulanmadı; ilk birkaç PR'da sonucu izleyin,
     # güvenilir olunca bu satırı silip zorunlu yapın.
     continue-on-error: true

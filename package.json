@@ -9,7 +9,7 @@
     "lint": "eslint",
     "db:push": "supabase db push --linked",
     "db:types": "supabase gen types typescript --linked > types/database.ts",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run",
     "test:db": "node scripts/db-test.mjs"
   },
