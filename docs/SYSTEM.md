@@ -43,6 +43,10 @@ Gün, **kullanıcının kendi saat dilimindeki takvim günüdür**. Saat dilimi 
 profile yazılır (`TimezoneSync`). Geçersiz bir saat dilimi adı veritabanında reddedilir.
 Hesaplamalar sunucuda, `user_today()` ile yapılır, istemcinin saatine güvenilmez.
 
+**Saat dilimi değişikliği 24 saatte en fazla bir kez** yapılabilir (ilk değişiklik, varsayılan UTC'den
+cihazın dilimine, serbesttir). Aksi halde saat dilimini batıya alarak "bugün"ü 26 saate kadar uzatıp
+zinciri kırmamak mümkün olurdu. Sınırdaki değişiklik sessizce reddedilir, bir sonraki gün tekrar denenir.
+
 ### 2.2 Check-in (halka ekleme)
 `check_in(chain)` RPC'si:
 1. Önce zinciri günceller (`settle`, bkz. 2.3).
@@ -111,6 +115,13 @@ Sadece **aktif zincir sıfırlanır**. `best_length`, zincirin `total_completed`
 - **Görünürlük (`discoverable`, varsayılan açık):** Kapalıysa aramada çıkmazsın ve kimse
   sana **yeni** istek gönderemez (sunucu "kullanıcı bulunamadı" der, varlığını belli etmez).
   Zaten arkadaş olduklarının, bekleyen isteklerin ve senin gönderdiğin isteklerin üzerinde etkisi yoktur.
+- **Oran sınırı:** arama dakikada en fazla **30**, arkadaşlık isteği saatte en fazla **20**. Aşılırsa
+  `rate_limited` hatası döner (kullanıcıya Türkçe mesaj gösterilir). Sayaçlar `rate_limits` tablosunda
+  kullanıcı ve eylem başına tek satırdır.
+- **Bildirme:** Arama sonuçlarında ve grup sıralamasında her kullanıcının yanında bayrak simgesi vardır.
+  Neden (uygunsuz ad / kötüye kullanım / diğer) ve en fazla 300 karakterlik not seçilir.
+  Bildirimler `reports` tablosuna yazılır; **istemci okuyamaz**, Supabase panelinden (Table Editor)
+  okunur. Günde en fazla **20** bildirim, aynı kişiyi aynı nedenle bir kez bildirebilirsin.
 - **Profil gizliliği:** Bir profili sadece kendisi ve onunla (bekleyen dahil) arkadaşlık
   ilişkisi olanlar okuyabilir. Tüm kullanıcı listesi çekilemez.
 - **Arkadaş sıralaması:** ben + kabul edilmiş arkadaşlar, seçilen tarihten beri tamamlanan
@@ -174,6 +185,9 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 | `friendships` | Arkadaşlık ve istekler |
 | `chain_groups`, `chain_group_members` | Ortak zincir grupları ve üyelik/davet |
 | `push_subscriptions` | Bildirim abonelikleri |
+| `blocked_words` | Yasaklı kullanıcı adı kelimeleri (panelden düzenlenebilir) |
+| `rate_limits` | Oran sınırlama sayaçları |
+| `reports` | Kullanıcı bildirimleri |
 | `league_members`, `league_results` | Lig üyelikleri ve sonuçları (bkz. bölüm 9) |
 
 ### 8.2 Depolama tasarrufu
@@ -214,6 +228,12 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
   `discoverable`, `reminders_enabled`, `reminder_hour` (+ lig için `league_visible`). `plan` ve sayaçlar yok.
 - Oturum: sayfa okumalarında `getClaims` (JWT yerelde doğrulanır), veri yazan işlemlerde `getUser`.
   `proxy.ts` sadece **iyimser** yönlendirmedir; asıl doğrulama sunucuda.
+- **Kullanıcı adı:** 3-20 karakter, küçük harf/rakam/`_`, eşsiz. Ayrıca **yasaklı kelime** kontrolünden geçer
+  (veritabanı tetikleyicisi, sadece ad değiştiğinde çalışır): ad küçük harfe çevrilir, Türkçe karakterler ve
+  yaygın rakam ikameleri (`0→o`, `1→i`, `3→e`, `4→a`, `5→s`, `7→t`, `8→b`, `@→a`, `$→s`) sadeleştirilir,
+  alt çizgi ve rakamlar atılır; sonra `blocked_words`'e göre taklit (`admin`, `thechain`...) ve küfür
+  kelimeleri aranır. Liste kısa ve net kelimelerden oluşur (yanlış eşleşmeyi önlemek için);
+  `blocked_words` tablosuna satır ekleyerek (migration gerekmez) genişletilir. `mode`: `contains` ya da `exact`.
 - **Service role anahtarı** sadece iki yerde kullanılır: cron rotası ve hesap silme. İstemciye gitmez.
 - Hesap silme: kullanıcı adını yazarak onaylanır; `auth.users` silinince tüm veri `ON DELETE CASCADE` ile gider.
 - Cron rotası `CRON_SECRET` ile korunur (sabit zamanlı karşılaştırma). `sw.js`, manifest ve `api/cron`
@@ -247,7 +267,8 @@ public/         sw.js, ikonlar
 6. `group_pending_invites` - bekleyen davetler
 7. `notifications` - abonelikler, hatırlatma ayarları, `users_to_remind`
 8. `polish` - arşivden geri alma limiti, davet iptali
-9. `leagues` - ligler *(henüz uygulanmadı)*
+9. `abuse_guards` - saat dilimi sınırı, yasaklı kelimeler, oran sınırı, bildirme
+10. `leagues` - ligler *(henüz uygulanmadı)*
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -283,6 +304,9 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 | Arama sonucu | en fazla 10, en az 2 karakter |
 | Bildirim cihazı | kullanıcı başına 5 |
 | Hatırlatma saati | varsayılan 20:00 (yerel) |
+| Saat dilimi değişikliği | 24 saatte bir |
+| Arama / arkadaşlık isteği oran sınırı | 30/dk · 20/saat |
+| Bildirme | günde 20 |
 | Cron sıklığı | 10 dk (hatırlatma), Pazartesi 12:00 UTC (lig) |
 | Veri sıkıştırma eşiği | 60 gün |
 | Lig grup boyu | 30 |
@@ -296,6 +320,9 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 - Google OAuth ekranı "Testing" modundaysa sadece test kullanıcıları giriş yapabilir.
 - Zincir görünürlüğü (`friends`) için arayüz yok.
 - Grup üyesi atma yok.
+- Bildirimler için moderasyon paneli yok; `reports` tablosu Supabase panelinden okunur ve işlem elle yapılır.
+- Yasaklı kelime listesi kısa; Türkçe ve İngilizce için yeni kelimeler `blocked_words`'e eklenmeli.
+- "Beyana dayalı check-in" (hile) tamamen çözülemez; şimdilik ödül yok, kanıt/onay özelliği yok.
 - Isı haritası, haftalık özet, rozetler, paylaşılabilir kart yok.
 - Ek bildirim türleri yok (kırılma riski, arkadaş tamamladı, davet geldi).
 - Profil sayfası yok (kullanıcı adı ve saat dilimi Ayarlar'da).
