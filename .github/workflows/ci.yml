@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Tip, lint, birim test, build
+    runs-on: ubuntu-latest
+    # Gizli anahtar gerekmez: build yalnızca herkese açık ortam değişkenlerinin varlığına bakar.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+      NEXT_PUBLIC_VAPID_PUBLIC_KEY: ci-placeholder
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+
+  db-tests:
+    name: Veritabanı testleri (yerel Supabase)
+    runs-on: ubuntu-latest
+    # Bu iş henüz bir GitHub çalıştırmasında doğrulanmadı; ilk birkaç PR'da sonucu izleyin,
+    # güvenilir olunca bu satırı silip zorunlu yapın.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Migration'ları sıfır bir yerel veritabanına uygular (canlı projeye dokunmaz).
+      - run: pnpm exec supabase start
+      - run: pnpm test:db -- --local
+      - if: failure()
+        run: pnpm exec supabase status || true

@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "supabase db push --linked",
-    "db:types": "supabase gen types typescript --linked > types/database.ts"
+    "db:types": "supabase gen types typescript --linked > types/database.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:db": "node scripts/db-test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -38,7 +41,8 @@
     "eslint-config-next": "16.4.3",
     "supabase": "^2.122.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.5"
   },
   "packageManager": "pnpm@12.14.0"
 }
