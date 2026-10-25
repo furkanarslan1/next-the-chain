@@ -17,7 +17,7 @@ type Props = {
   target: { type: "chain"; id: string } | { type: "badge"; key: string };
   label: string;
   // Tetikleyici düğmenin görünümü.
-  trigger?: "icon" | "button";
+  trigger?: "icon" | "button" | "large";
   fileName?: string;
 };
 
@@ -124,11 +124,13 @@ export function ShareDialog({ target, label, trigger = "icon", fileName = "the-c
         className={
           trigger === "icon"
             ? "inline-flex size-8 items-center justify-center rounded-full text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-            : "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-3 text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+            : trigger === "large"
+              ? "inline-flex h-12 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 text-sm font-medium outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
+              : "inline-flex h-8 items-center justify-center gap-1.5 rounded-lg border px-3 text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
         }
       >
-        <LuShare2 className="size-4" aria-hidden />
-        {trigger === "button" && "Paylaş"}
+        <LuShare2 className={trigger === "large" ? "size-5" : "size-4"} aria-hidden />
+        {trigger !== "icon" && "Paylaş"}
       </DialogTrigger>
 
       <DialogContent className="gap-4 p-5">

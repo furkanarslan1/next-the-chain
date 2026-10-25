@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -160,4 +160,134 @@
 @media (prefers-reduced-motion: reduce) {
   .link-pending { animation: none; opacity: 0.5; }
   .link-new, .plus-one { animation-duration: 0.01ms; }
+}
+
+/* ---------------------------------------------------------------------------
+   Gece gökyüzü arka planı: yavaş kayan renkli haleler + seyrek yanıp sönen yıldızlar.
+   Sadece CSS; yalnızca transform/opacity animasyonu (GPU'da çalışır, JS yok).
+   Halelerin renkleri --halo-1..3 ile belirlenir (ana sayfada kullanıcının zincir renkleri). */
+:root {
+  --halo-1: #ff6a3d;
+  --halo-2: #4d8dff;
+  --halo-3: #9b7bff;
+}
+
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+.sky-halo {
+  position: absolute;
+  width: 95vmax;
+  height: 95vmax;
+  border-radius: 50%;
+  opacity: 0.55;
+  will-change: transform;
+  animation: halo-drift 56s ease-in-out infinite alternate;
+}
+.sky-halo-1 {
+  top: -48vmax;
+  left: -38vmax;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--halo-1) 42%, transparent), transparent);
+}
+.sky-halo-2 {
+  right: -52vmax;
+  top: 8vmax;
+  opacity: 0.45;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--halo-2) 38%, transparent), transparent);
+  animation-duration: 72s;
+  animation-delay: -18s;
+}
+.sky-halo-3 {
+  bottom: -62vmax;
+  left: -12vmax;
+  opacity: 0.4;
+  background: radial-gradient(closest-side, color-mix(in oklab, var(--halo-3) 36%, transparent), transparent);
+  animation-duration: 64s;
+  animation-delay: -34s;
+}
+
+.sky-stars {
+  position: absolute;
+  inset: 0;
+  will-change: opacity;
+}
+.sky-stars-a {
+  background-image:
+    radial-gradient(1.1px 1.1px at 173px 493px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 341px 32px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 195px 306px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 27px 52px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 43px 131px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 38px 431px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 493px 122px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 303px 307px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 507px 121px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 156px 222px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 300px 165px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 60px 305px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 198px 57px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 296px 38px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 262px 356px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 405px 168px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 193px 161px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 365px 407px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 302px 161px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 456px 183px, rgba(255,255,255,0.85) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 319px 509px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 270px 222px, rgba(255,255,255,0.85) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 85px 485px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 28px 500px, rgba(255,255,255,0.85) 45%, transparent 55%);
+  background-size: 520px 520px;
+  animation: star-twinkle 7s ease-in-out infinite alternate;
+}
+.sky-stars-b {
+  background-image:
+    radial-gradient(1.6px 1.6px at 176px 436px, rgba(255,255,255,0.85) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 498px 229px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 525px 548px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(2.0px 2.0px at 22px 387px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 78px 156px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 718px 51px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 638px 460px, rgba(255,255,255,0.85) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 561px 517px, rgba(255,255,255,0.85) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 31px 166px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 28px 472px, rgba(255,255,255,0.85) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 418px 504px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 689px 46px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 84px 210px, rgba(255,255,255,0.55) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 133px 581px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 213px 357px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 306px 381px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(1.6px 1.6px at 333px 504px, rgba(255,255,255,0.85) 45%, transparent 55%),
+    radial-gradient(1.1px 1.1px at 35px 103px, rgba(255,255,255,1.0) 45%, transparent 55%),
+    radial-gradient(0.9px 0.9px at 10px 511px, rgba(255,255,255,0.7) 45%, transparent 55%),
+    radial-gradient(1.3px 1.3px at 593px 631px, rgba(255,255,255,0.55) 45%, transparent 55%);
+  background-size: 760px 760px;
+  animation: star-twinkle 11s ease-in-out infinite alternate;
+  animation-delay: -5s;
+}
+
+@keyframes halo-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(6vmax, 5vmax, 0) scale(1.12); }
+}
+@keyframes star-twinkle {
+  from { opacity: 0.25; }
+  to { opacity: 0.95; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sky-halo,
+  .sky-stars {
+    animation: none;
+  }
+  .sky-stars {
+    opacity: 0.6;
+  }
 }

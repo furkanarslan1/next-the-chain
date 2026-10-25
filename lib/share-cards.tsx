@@ -33,6 +33,7 @@ function Footer({ username }: { username?: string | null }) {
         alignItems: "center",
         fontSize: 34,
         color: MUTED,
+        marginTop: 44,
       }}
     >
       <div style={{ display: "flex" }}>{username ? `@${username}` : ""}</div>
@@ -45,11 +46,13 @@ export function chainCard(p: {
   color: string;
   length: number;
   best: number;
+  total: number;
   title?: string | null;
   username?: string | null;
   kind: string;
 }) {
-  const { scale, links } = spiralLayout(p.length, 46);
+  // Kartta az halkalı zincirler de büyük görünsün diye ölçek sınırı yüksek.
+  const { scale, links } = spiralLayout(p.length, 46, 34);
   const len = scale;
   const stroke = Math.max(scale * 0.17, 0.35);
 
@@ -75,7 +78,8 @@ export function chainCard(p: {
         </div>
       </div>
 
-      <svg width="720" height="720" viewBox="-50 -50 100 100">
+      <div style={{ display: "flex", flex: 1, width: "100%", alignItems: "center", justifyContent: "center" }}>
+      <svg width="600" height="600" viewBox="-50 -50 100 100">
         {links.map((link, i) => {
           const w = scale * (i % 2 === 0 ? 0.62 : 0.24);
           return (
@@ -97,11 +101,15 @@ export function chainCard(p: {
           );
         })}
       </svg>
+      </div>
 
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 20 }}>
-          <div style={{ display: "flex", fontSize: 200, lineHeight: 1 }}>{p.length}</div>
+          <div style={{ display: "flex", fontSize: 180, lineHeight: 1 }}>{p.length}</div>
           <div style={{ display: "flex", fontSize: 52, color: p.color }}>halka</div>
+        </div>
+        <div style={{ display: "flex", fontSize: 40, color: p.color }}>
+          {p.kind === "quit" ? "temiz devam ediyor" : "kırılmadan devam ediyor"}
         </div>
         {p.title ? (
           <div
@@ -118,7 +126,7 @@ export function chainCard(p: {
           </div>
         ) : null}
         <div style={{ display: "flex", fontSize: 34, color: MUTED, marginTop: 6 }}>
-          En uzun zincir: {p.best}
+          En uzun {p.best} · Toplam {p.total} halka
         </div>
       </div>
 

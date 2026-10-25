@@ -55,6 +55,7 @@ export async function GET(request: Request) {
         color: chain.sh_color,
         length: chain.sh_length,
         best: chain.sh_best,
+        total: chain.sh_total,
         kind: chain.sh_kind,
         title: parsed.data.title === "1" ? chain.sh_title : null,
         username: parsed.data.user === "1" ? chain.sh_username : null,

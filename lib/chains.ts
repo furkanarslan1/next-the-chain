@@ -44,7 +44,7 @@ export type LinkPosition = { x: number; y: number; angle: number };
 
 // Halkaları merkezden dışa doğru Arşimet spiraline dizer.
 // Halka sayısı arttıkça ölçek küçülür; zincir her zaman 100x100 alana sığar.
-export function spiralLayout(count: number, radius = 46) {
+export function spiralLayout(count: number, radius = 46, maxScale = 15) {
   const turnGap = 1.15; // spiral turları arası mesafe (halka boyu = 1)
   const pitch = 0.8; // ardışık halkalar arası yay uzunluğu
   const a = turnGap / (2 * Math.PI);
@@ -63,15 +63,43 @@ export function spiralLayout(count: number, radius = 46) {
   }
 
   const maxR = Math.sqrt(2 * Math.max(count, 1) * pitch * a);
-  const scale = Math.min(radius / (maxR + 0.8), 11);
+  const scale = Math.min(radius / (maxR + 0.8), maxScale);
 
   const xs = raw.map((p) => p.x * scale);
   const ys = raw.map((p) => p.y * scale);
-  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
-  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+
+  // Ortalamayı halka merkezlerine değil, halka uçlarını da içeren gerçek kapsama göre yap;
+  // yoksa az halkalı zincirler (2-5) bir yana kayık görünür.
+  const half = scale / 2;
+  const ends = raw.flatMap((p, i) => {
+    const rad = (p.angle * Math.PI) / 180;
+    const dx = half * Math.cos(rad);
+    const dy = half * Math.sin(rad);
+    return [
+      [xs[i] - dx, ys[i] - dy],
+      [xs[i] + dx, ys[i] + dy],
+    ];
+  });
+  const ex = ends.map((e) => e[0]);
+  const ey = ends.map((e) => e[1]);
+  const cx = ends.length ? (Math.min(...ex) + Math.max(...ex)) / 2 : 0;
+  const cy = ends.length ? (Math.min(...ey) + Math.max(...ey)) / 2 : 0;
 
   return {
     scale,
     links: raw.map((p, i) => ({ x: xs[i] - cx, y: ys[i] - cy, angle: p.angle })),
   };
+}
+
+// Kullanıcının yerel saatine göre selamlama.
+export function greetingFor(timeZone: string) {
+  const hour = Number(
+    new Intl.DateTimeFormat("en-US", { timeZone, hour: "numeric", hourCycle: "h23" }).format(
+      new Date(),
+    ),
+  );
+  if (hour < 5) return "İyi geceler";
+  if (hour < 12) return "Günaydın";
+  if (hour < 18) return "İyi günler";
+  return "İyi akşamlar";
 }
