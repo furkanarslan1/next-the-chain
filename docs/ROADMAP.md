@@ -1,5 +1,7 @@
 # The Chain — Kararlar ve Yol Haritası
 
+> Sistemin güncel kuralları, sınırları ve veri modeli için bkz. [`SYSTEM.md`](./SYSTEM.md).
+
 ## Ürün fikri
 
 İstikrar uygulaması ("zinciri kırma" yöntemi). Kullanıcı konulara göre zincirler açar
