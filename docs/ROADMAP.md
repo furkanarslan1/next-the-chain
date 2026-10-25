@@ -20,6 +20,7 @@
 | Sıralama | Genel (all-time) sıralama **yok**. **Haftalık/aylık ligler** ve **arkadaş sıralaması**. |
 | Sosyal | Kullanıcılar arkadaşlarıyla **ortak zincir** oluşturabilir; arkadaşlar arasında sıralama olur. |
 | Saat dilimi | "Gün" kullanıcının saat dilimine göre, sunucu tarafında hesaplanır. |
+| Ortak zincir | Zinciri açan kişi oluştururken arkadaşlarını ekler. Üyelerden biri/birkaçı o günü tamamlayamazsa **sıralamada geriye düşer** veya **"başaramayanlar"** olarak görünür. Ortak zincir tamamen kaybettirmez, kişisel ilerleme ayrı tutulur (detay Faz 2'de netleşecek). |
 | Kırılma hesabı | Cron yok; kullanıcı uygulamayı açınca/check-in yapınca **lazy** hesaplanır. |
 
 ## Teknoloji
@@ -45,7 +46,8 @@
 - [x] Next.js, Tailwind, shadcn, react-icons, zod, motion
 - [x] Supabase istemcileri (`lib/supabase/*`) ve oturum yenileyen `proxy.ts`
 - [ ] `.env.local` içine Supabase anahtarlarını ekle (`.env.example`'a bak)
-- [ ] Supabase CLI + migration klasörü, `gen types` script'i
+- [x] Supabase CLI + migration klasörü, `gen types` script'i (`pnpm db:push`, `pnpm db:types`)
+- [x] İlk şema (`profiles`, `chains`, `check_ins`, `friendships`, RPC'ler) uygulandı
 - [ ] Temel klasör yapısı, tema, mobile-first layout
 
 ### Faz 1 — Çekirdek (MVP)
@@ -77,6 +79,6 @@
 ## Açık sorular
 
 - Bırakma zincirlerinde "nüks oldu" akışının tam davranışı
-- Ortak zincirde bir kişi kırarsa ne olur (sadece o mu, herkes mi)
+- Ortak zincirde bir kişi tamamlayamazsa: sadece o kişi mi "başaramayan" olur, ortak sayaç herkes için mi düşer? (Karar yönü: kişi bazlı geriye düşme/başaramayanlar listesi)
 - Lig yapısı (kaç kişilik gruplar, terfi/düşme)
 - Fotoğraf kanıtı olacak mı
