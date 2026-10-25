@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { BottomNav } from "@/components/bottom-nav";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { DeleteAccount } from "@/components/delete-account";
 import { NotificationSettings } from "@/components/notification-settings";
 import { signOut } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
@@ -36,11 +38,26 @@ async function SettingsContent() {
         hour={profile.reminder_hour}
       />
 
+      <section className="space-y-3">
+        <h2 className="font-medium">Zincirler</h2>
+        <Link
+          href="/archive"
+          className="flex items-center justify-between rounded-xl border p-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          Arşivlenen zincirler
+          <span aria-hidden className="text-muted-foreground">
+            ›
+          </span>
+        </Link>
+      </section>
+
       <form action={signOut}>
         <Button type="submit" variant="outline">
           Çıkış yap
         </Button>
       </form>
+
+      <DeleteAccount username={profile.username ?? ""} />
     </>
   );
 }

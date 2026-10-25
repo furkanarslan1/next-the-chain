@@ -95,6 +95,23 @@ export async function inviteToGroup(
   return { ok: true };
 }
 
+export async function cancelGroupInvite(
+  groupId: string,
+  userId: string,
+): Promise<GroupResult> {
+  if (!uuid.safeParse(groupId).success || !uuid.safeParse(userId).success) {
+    return { ok: false, error: "Geçersiz davet." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("cancel_group_invite", {
+    p_group_id: groupId,
+    p_user_id: userId,
+  });
+  if (error) return { ok: false, error: messageFor(error) };
+  revalidatePath(`/groups/${groupId}`);
+  return { ok: true };
+}
+
 export async function leaveGroup(groupId: string): Promise<GroupResult> {
   if (!uuid.safeParse(groupId).success) return { ok: false, error: "Geçersiz grup." };
   const supabase = await createClient();

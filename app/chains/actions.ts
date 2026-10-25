@@ -68,6 +68,7 @@ export async function archiveChain(chainId: string): Promise<ActionResult> {
     .eq("id", chainId);
   if (error) return { ok: false, error: "Arşivlenemedi, tekrar dene." };
   revalidatePath("/");
+  revalidatePath("/archive");
   return { ok: true };
 }
 
@@ -76,6 +77,7 @@ export async function deleteChain(chainId: string): Promise<ActionResult> {
   const { error } = await supabase.from("chains").delete().eq("id", chainId);
   if (error) return { ok: false, error: "Silinemedi, tekrar dene." };
   revalidatePath("/");
+  revalidatePath("/archive");
   return { ok: true };
 }
 
@@ -90,4 +92,23 @@ export async function updateTimezone(timeZone: string) {
   const supabase = await createClient();
   await supabase.from("profiles").update({ timezone: timeZone }).eq("id", user.id);
   revalidatePath("/");
+}
+
+export async function restoreChain(chainId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("chains")
+    .update({ archived_at: null })
+    .eq("id", chainId);
+  if (error) {
+    return {
+      ok: false,
+      error: error.message.includes("chain_limit")
+        ? "Zincir limitin dolu. Birini arşivle ya da planını yükselt."
+        : "Geri alınamadı, tekrar dene.",
+    };
+  }
+  revalidatePath("/");
+  revalidatePath("/archive");
+  return { ok: true };
 }

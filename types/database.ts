@@ -379,6 +379,10 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { a: string; b: string }; Returns: boolean }
+      cancel_group_invite: {
+        Args: { p_group_id: string; p_user_id: string }
+        Returns: undefined
+      }
       check_in: {
         Args: { p_chain_id: string }
         Returns: {

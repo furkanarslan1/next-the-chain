@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getUser } from "@/lib/auth";
 import { sendPush } from "@/lib/push";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export type SettingsResult = { ok: true } | { ok: false; error: string };
@@ -91,4 +92,27 @@ export async function sendTestNotification(): Promise<SettingsResult> {
   return delivered > 0
     ? { ok: true }
     : { ok: false, error: "Bildirim gönderilemedi. Aboneliği kapatıp tekrar aç." };
+}
+
+// Hesabı ve tüm verilerini kalıcı siler (zincirler, arkadaşlıklar, gruplar, abonelikler).
+// Kullanıcı adını yazarak onaylanır.
+export async function deleteAccount(confirmation: string): Promise<SettingsResult> {
+  const user = await getUser();
+  if (!user) redirect("/login");
+
+  const supabase = await createClient();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.username || confirmation.trim().toLowerCase() !== profile.username) {
+    return { ok: false, error: "Kullanıcı adını doğru yazmalısın." };
+  }
+
+  const { error } = await createAdminClient().auth.admin.deleteUser(user.id);
+  if (error) return { ok: false, error: "Hesap silinemedi, tekrar dene." };
+
+  await supabase.auth.signOut();
+  redirect("/login");
 }

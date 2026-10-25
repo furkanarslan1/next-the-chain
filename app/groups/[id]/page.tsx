@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { BottomNav } from "@/components/bottom-nav";
+import { CancelInviteButton } from "@/components/cancel-invite-button";
 import { GroupInvite } from "@/components/group-invite";
 import { GroupManage } from "@/components/group-manage";
 import { getFriends } from "@/lib/friends";
@@ -150,8 +151,12 @@ async function GroupContent({ params }: { params: Promise<{ id: string }> }) {
                 <span className="truncate font-medium">
                   @{invite.member_username}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="flex items-center gap-2 text-xs text-muted-foreground">
                   Yanıt bekliyor
+                  <CancelInviteButton
+                    groupId={id}
+                    userId={invite.member_id}
+                  />
                 </span>
               </li>
             ))}
