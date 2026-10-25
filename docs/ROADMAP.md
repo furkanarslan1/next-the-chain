@@ -74,7 +74,7 @@
 
 ### Faz 3 — Cila ve büyüme
 - PWA (ekrana ekle, offline kabuğu)
-- Kilometre taşı rozetleri (7/30/100 gün), paylaşılabilir zincir kartı
+- [x] Kilometre taşı rozetleri ve paylaşılabilir zincir/rozet kartı
 - Isı haritası, haftalık özet
 - Performans ve maliyet gözden geçirme (Supabase Pro / barındırma planı)
 

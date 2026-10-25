@@ -201,6 +201,7 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 | `blocked_words` | Yasaklı kullanıcı adı kelimeleri (panelden düzenlenebilir) |
 | `rate_limits` | Oran sınırlama sayaçları |
 | `notifications` | Gönderilmeyi bekleyen olay bildirimleri (gelen kutusu) |
+| `user_badges` | Kazanılan rozetler (`seen_at`: yeni rozet penceresi görüldü mü) |
 | `reports` | Kullanıcı bildirimleri |
 | `league_members`, `league_results`, `league_deleted_stats` | Lig üyelikleri, sonuçları ve silinen zincirlerin haftalık katkısı (bkz. bölüm 9) |
 
@@ -240,7 +241,42 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
   geçici olarak düşük gösterebilir; haftalık kapanışta herkesin zinciri önce işlenir, nihai sonuç doğrudur.
 - Lig tablolarına istemci erişimi yoktur; her şey `league_standings()` ve `my_league_history()` RPC'leriyle.
 
-## 10. Güvenlik modeli
+## 10. Rozetler ve paylaşım kartı
+
+### Rozetler (13)
+| Grup | Rozet | Koşul |
+|---|---|---|
+| Seri | `streak_7`, `streak_30`, `streak_100`, `streak_365` | Bir zincirin **en uzun serisi** (`best_length`) en az 7 / 30 / 100 / 365 |
+| Toplam | `total_100`, `total_500`, `total_1000` | Ömür boyu tamamlanan halka (`profiles.total_completed`) |
+| Özel | `first_link` | En az 1 halka |
+| Özel | `comeback` | Bir zincir kırıldı (`break_count >= 1`) ve yeniden en az 7 uzunluğa ulaştı |
+| Sosyal | `first_friend` | En az bir kabul edilmiş arkadaş |
+| Sosyal | `first_group` | En az **iki** üyesi olan bir ortak zincire üye |
+| Lig | `first_promotion` | Herhangi bir hafta terfi (`promoted`) sonucu |
+| Lig | `perfect_week` | Herhangi bir lig haftasında %100 puan |
+
+- **Tembel hesaplama:** Kullanıcı uygulamayı açtığında (`my_badges()`) kurallar kontrol edilir, sağlananlar
+  `user_badges`'e **bir kez** yazılır. Sonradan zincir silinse ya da arkadaşlık bitse bile rozet kalır.
+  Rozet için ayrı push bildirimi yoktur.
+- **"Yeni rozet" penceresi:** Ana sayfada `seen_at` boş olan rozetler gösterilir; pencere kapanınca
+  `mark_badges_seen()` ile işaretlenir. İlk açılışta eski kullanıcılar kazanmış olduklarını toplu görür.
+- `/badges` sayfası kazanılanları renkli, kilitlileri soluk gösterir; seri ve toplam rozetlerde ilerleme çubuğu vardır.
+- Rozet kataloğu (ad, açıklama, grup, hedef) kodda `lib/badges.ts`'tedir; **yeni rozet eklemek** için hem bu liste hem
+  `sync_badges()` ve `user_badges.badge` kontrol kısıtı (yeni migration) güncellenir.
+
+### Paylaşım kartı
+- Zincir kartında ve kazanılmış her rozette paylaş simgesi vardır. Pencerede **önizleme** ve iki anahtar bulunur:
+  "Zincirin adı görünsün" (varsayılan açık, sadece zincir kartında) ve **"Kullanıcı adım görünsün" (varsayılan kapalı)**.
+  Kullanıcı seçmeden kişisel bilgi kartta çıkmaz.
+- Telefonda **Paylaş** Web Share API ile paylaşım menüsünü açar; desteklenmiyorsa PNG indirilir. **Kaydet** her zaman indirir.
+- `GET /api/share` (Next `ImageResponse`/satori, 1080×1350 PNG): `type=chain&id=...&title=0|1&user=0|1` ya da
+  `type=badge&key=...&user=0|1`. **Giriş şart; sadece kendi zincirin ve kendi kazandığın rozet** (RPC
+  `share_chain_data` / `share_badge_data` sahiplik kontrolü yapar). **Saatte en fazla 60** kart (oran sınırı),
+  yanıt `Cache-Control: private, no-store`.
+- Satori kısıtları: sadece flexbox, SVG içinde `<text>` desteklenmez (sayılar ayrı yazı olarak bindirilir),
+  bileşen yerine düz JSX döndüren fonksiyonlar kullanılır (`lib/share-cards.tsx`).
+
+## 11. Güvenlik modeli
 
 - **Tüm tablolarda RLS açık.** Sayaçlar ve kurallar istemciden **yazılamaz**: sütun bazlı yetkiler
   ve `SECURITY DEFINER` RPC'ler (`search_path = ''`) üzerinden çalışır.
@@ -260,7 +296,7 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 - Cron rotası `CRON_SECRET` ile korunur (sabit zamanlı karşılaştırma). `sw.js`, manifest ve `api/cron`
   proxy'den muaftır.
 
-## 11. Mimari ve işletim
+## 12. Mimari ve işletim
 
 ### Yığın
 Next.js 16 (App Router, `proxy.ts`, Cache Components), React 19, TypeScript, Tailwind v4, shadcn/ui
@@ -291,6 +327,7 @@ public/         sw.js, ikonlar
 9. `abuse_guards` - saat dilimi sınırı, yasaklı kelimeler, oran sınırı, bildirme
 10. `leagues` - ligler
 11. `more_notifications` - gelen kutusu, kırılma uyarısı, sosyal ve lig bildirimleri
+12. `badges_and_sharing` - rozetler ve paylaşım kartı verisi
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -315,7 +352,7 @@ public/         sw.js, ikonlar
 Her özellik için ayrı branch (`feat/...`); `main`'e doğrudan değişiklik yapılmaz. Migration'lar
 uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir.
 
-## 12. Sabitler (hızlı bakış)
+## 13. Sabitler (hızlı bakış)
 
 | Ne | Değer |
 |---|---|
@@ -330,13 +367,15 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 | Saat dilimi değişikliği | 24 saatte bir |
 | Arama / arkadaşlık isteği oran sınırı | 30/dk · 20/saat |
 | Bildirme | günde 20 |
+| Rozet sayısı | 13 |
+| Paylaşım kartı | saatte 60, 1080×1350 PNG |
 | Kırılma uyarısı saati | 22:00 yerel, en az 3 halkalık zincir |
 | Cron sıklığı | 10 dk (hatırlatma), Pazartesi 12:00 UTC (lig) |
 | Veri sıkıştırma eşiği | 60 gün |
 | Lig grup boyu | 30 |
 | Terfi / düşme | ilk/son `n/4` (en çok 5), puan >= 50 / < 30 |
 
-## 13. Bilinen eksikler ve fikirler
+## 14. Bilinen eksikler ve fikirler
 
 - Ödeme / plan yükseltme yok (`plan` şimdilik elle değişir).
 - Apple ile giriş yok (iOS mağaza yayını öncesi gerekli).
@@ -347,7 +386,9 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 - Bildirimler için moderasyon paneli yok; `reports` tablosu Supabase panelinden okunur ve işlem elle yapılır.
 - Yasaklı kelime listesi kısa; Türkçe ve İngilizce için yeni kelimeler `blocked_words`'e eklenmeli.
 - "Beyana dayalı check-in" (hile) tamamen çözülemez; şimdilik ödül yok, kanıt/onay özelliği yok.
-- Isı haritası, haftalık özet, rozetler, paylaşılabilir kart yok.
+- Isı haritası ve haftalık özet yok.
+- Rozet kazanınca push bildirimi yok, sadece uygulamada gösterilir.
+- Paylaşım kartı yalnızca zincir ve rozet için var; lig sonucu ya da haftalık özet kartı yok.
 - Profil sayfası yok (kullanıcı adı ve saat dilimi Ayarlar'da).
 - React Native (Expo) uygulaması: monorepo'ya geçiş ve `packages/core` çıkarımı yapılmadı.
 - Vercel Hobby ticari kullanıma izin vermez; gerçek kullanıcılara açmadan önce Pro gerekir.
