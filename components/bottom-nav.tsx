@@ -1,13 +1,14 @@
 import Link from "next/link";
-import { LuLink2, LuUserPlus, LuUsers } from "react-icons/lu";
+import { LuLink2, LuSettings, LuUserPlus, LuUsers } from "react-icons/lu";
 
 const ITEMS = [
   { key: "home", href: "/", label: "Zincirler", Icon: LuLink2 },
   { key: "groups", href: "/groups", label: "Gruplar", Icon: LuUsers },
   { key: "friends", href: "/friends", label: "Arkadaşlar", Icon: LuUserPlus },
+  { key: "settings", href: "/settings", label: "Ayarlar", Icon: LuSettings },
 ] as const;
 
-export function BottomNav({ active }: { active: "home" | "groups" | "friends" }) {
+export function BottomNav({ active }: { active: "home" | "groups" | "friends" | "settings" }) {
   return (
     <nav
       aria-label="Ana gezinme"

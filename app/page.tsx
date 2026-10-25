@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/bottom-nav";
 import { ChainCard } from "@/components/chain-card";
 import { TimezoneSync } from "@/components/timezone-sync";
-import { signOut } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -65,11 +64,6 @@ async function Dashboard() {
             Toplam {profile.total_completed} halka
           </p>
         </div>
-        <form action={signOut}>
-          <Button type="submit" variant="ghost" size="sm">
-            Çıkış
-          </Button>
-        </form>
       </header>
 
       {chains.length === 0 ? (
