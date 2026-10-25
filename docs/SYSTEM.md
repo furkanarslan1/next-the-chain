@@ -273,6 +273,8 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
   `type=badge&key=...&user=0|1`. **Giriş şart; sadece kendi zincirin ve kendi kazandığın rozet** (RPC
   `share_chain_data` / `share_badge_data` sahiplik kontrolü yapar). **Saatte en fazla 60** kart (oran sınırı),
   yanıt `Cache-Control: private, no-store`.
+- Kartta büyük halka sayısı, "kırılmadan devam ediyor" (quit zincirinde "temiz devam ediyor"), en uzun seri ve toplam
+  halka yazar. "Gün" yerine "halka" denir çünkü joker günleri halka eklemeden zinciri korur.
 - Satori kısıtları: sadece flexbox, SVG içinde `<text>` desteklenmez (sayılar ayrı yazı olarak bindirilir),
   bileşen yerine düz JSX döndüren fonksiyonlar kullanılır (`lib/share-cards.tsx`).
 
@@ -303,6 +305,17 @@ Next.js 16 (App Router, `proxy.ts`, Cache Components), React 19, TypeScript, Tai
 (Base UI), Supabase (Auth, Postgres, RLS, RPC, `pg_cron`/`pg_net`), Vercel (Hobby), Web Push (`web-push`).
 **İş mantığı Supabase'tedir** (RPC/SQL); bu sayede React Native uygulaması aynı backend'i kullanır.
 Next.js Server Actions sadece web içindir.
+
+### Arayüz notları
+- **Yazı tipi:** Geist (`latin` + `latin-ext`, Türkçe karakterler için). `globals.css`'te `--font-sans`
+  `var(--font-geist-sans)`'e bağlıdır; kendine bağlı bırakılırsa tarayıcı serif'e düşer.
+- **Gece gökyüzü arka planı** (`components/sky-background.tsx`, stiller `globals.css`): yavaş kayan 3 renkli hale ve
+  seyrek yanıp sönen 2 yıldız katmanı. Sadece CSS, sadece `transform`/`opacity` animasyonu, JS yok; hareket
+  azaltma ayarında durur. Hale renkleri `--halo-1..3` değişkenleriyle gelir; ana sayfa bunları kullanıcının zincir
+  renklerine boyar (`components/sky-tint.tsx`).
+- **Ana sayfa:** selamlama, "Bugün x/y tamam" halka özeti, lig ve rozet kutucukları, zincir kartları.
+  **Zincir kartı:** zincirin renginde ışıma, Seri / En uzun / Toplam istatistikleri, büyük tamamla düğmesi, belirgin
+  Paylaş düğmesi, arşiv/sil/nüks için "⋯" menüsü.
 
 ### Önemli dizinler
 ```
