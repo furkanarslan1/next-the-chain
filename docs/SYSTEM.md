@@ -288,6 +288,11 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
   yanıt `Cache-Control: private, no-store`.
 - Kartta büyük halka sayısı, "kırılmadan devam ediyor" (quit zincirinde "temiz devam ediyor"), en uzun seri ve toplam
   halka yazar. "Gün" yerine "halka" denir çünkü joker günleri halka eklemeden zinciri korur.
+- **Rütbe kartı** (`type=rank`): rütbe avatarı, rütbe adı ve açıklaması, ilerleme çubuğu, "X aktif gün · Y için N gün kaldı".
+  **Haftalık özet kartı** (`type=week`): günlük çubuklar (en verimli gün sarı), toplam halka, aktif gün, geçen haftaya göre değişim,
+  hafta aralığı. İkisi de `share_profile_data()` ile (sadece kendi profilin, saatte 60 sınırını ortak kullanır); haftalık kart ayrıca
+  `my_heatmap(21)` verisini kullanır. Profil sayfasında rütbe alanında ve haftalık özet başlığında, ayrıca rütbe atlama penceresinde
+  paylaş düğmesi vardır. Kullanıcı adı varsayılan olarak kartta görünmez.
 - Satori kısıtları: sadece flexbox, SVG içinde `<text>` desteklenmez (sayılar ayrı yazı olarak bindirilir),
   bileşen yerine düz JSX döndüren fonksiyonlar kullanılır (`lib/share-cards.tsx`).
 
@@ -438,6 +443,7 @@ public/         sw.js, ikonlar
 14. `perf_throttling` - lig sıralama kaydı, rozet kontrolünü seyreltme
 15. `onboarding_pwa` - tanıtım turu aşaması, PWA yükleme ölçümü
 16. `profile_ranks_heatmap` - aktif gün sayacı, rütbe kutlaması, ısı haritası, listelerde aktif gün
+17. `share_profile_data` - rütbe ve haftalık özet kartlarının verisi
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -503,7 +509,7 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 - Yasaklı kelime listesi kısa; Türkçe ve İngilizce için yeni kelimeler `blocked_words`'e eklenmeli.
 - "Beyana dayalı check-in" (hile) tamamen çözülemez; şimdilik ödül yok, kanıt/onay özelliği yok.
 - Rozet kazanınca push bildirimi yok, sadece uygulamada gösterilir.
-- Paylaşım kartı yalnızca zincir ve rozet için var; rütbe, haftalık özet ve lig sonucu kartı yok.
+- Paylaşım kartı zincir, rozet, rütbe ve haftalık özet için var; lig sonucu kartı yok.
 - Aktif gün sayacı geçmiş için yaklaşık hesaplandı (eski günlerin ayrıntısı sıkıştırıldığı için).
 - Profil sayfası yok (kullanıcı adı ve saat dilimi Ayarlar'da).
 - React Native (Expo) uygulaması: monorepo'ya geçiş ve `packages/core` çıkarımı yapılmadı.
