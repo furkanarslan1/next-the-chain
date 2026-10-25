@@ -75,6 +75,7 @@
 ### Faz 3 — Cila ve büyüme
 - PWA (ekrana ekle, offline kabuğu)
 - [x] Kilometre taşı rozetleri ve paylaşılabilir zincir/rozet kartı
+- [x] Otomatik testler ve CI (birim + veritabanı + GitHub Actions)
 - Isı haritası, haftalık özet
 - Performans ve maliyet gözden geçirme (Supabase Pro / barındırma planı)
 

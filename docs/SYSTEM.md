@@ -319,6 +319,30 @@ Next.js 16 (App Router, `proxy.ts`, Cache Components), React 19, TypeScript, Tai
 **İş mantığı Supabase'tedir** (RPC/SQL); bu sayede React Native uygulaması aynı backend'i kullanır.
 Next.js Server Actions sadece web içindir.
 
+### Testler ve CI
+Komutlar: `pnpm typecheck` · `pnpm lint` · `pnpm test` (birim) · `pnpm test:db` (veritabanı) · `pnpm build`.
+
+- **Birim testler** (`tests/unit/`, Vitest, 41 test): tarih yardımcıları, spiral yerleşimi (sığma ve ortalama), form doğrulamaları,
+  lig yardımcıları, bildirim metinleri. **Kayma bekçileri** kod ile SQL'in ayrışmasını yakalar: rozet listesi
+  (`lib/badges.ts` ↔ `user_badges` kısıtı ve `sync_badges`), plan limitleri (`PLAN_LIMITS` ↔ `plan_chain_limit()`), tur hedefleri
+  (`steps.ts` ↔ bileşenlerdeki `data-tour`). Yeni rozet, plan ya da tur adımı eklerken bu testler hangi dosyaların birlikte
+  güncellenmesi gerektiğini söyler.
+- **Veritabanı testleri** (`supabase/tests/*.test.sql`, 8 dosya): `01` koruma kuralları · `02` zincirin çekirdek kuralları (halka,
+  joker, kırılma, nüks, plan limiti, sıkıştırma) · `03` arkadaşlık · `04` **RLS** (`authenticated` rolüne geçip yetkisiz okuma/yazmayı
+  dener) · `05` ortak zincirler · `06` ligler · `07` rozetler ve bildirimler · `08` tur ve PWA kaydı.
+  - Her dosya tek bir `DO` bloğudur: sahte kullanıcılar (`@test.invalid`) oluşturur, kuralları doğrular, bir doğrulama tutmazsa
+    `FAIL: ...` verir ve sonunda **`TEST_PASSED` hatasıyla kendini geri alır** (veritabanında iz kalmaz). `scripts/db-test.mjs`
+    sonucu okur ve ayrıca sahte kullanıcı kalmadığını (temizlik) denetler.
+  - `pnpm test:db` bağlı (linked) projede, `pnpm test:db -- --local` yerel Supabase'te, `-- --only=chains` tek dosya çalıştırır.
+  - **Yeni test yazarken:** kullanıcı adlarına dosyaya özgü önek ver, e-postası `@test.invalid` olsun; haftanın gününe bağlı olma
+    (lig puanını `league_score(..., hafta_sonu)` ile hesapla, kırılmada `weekly_jokers = 0` kullan); gerçek kullanıcı verisine bağlı olma
+    (sadece sahte kullanıcı kimlikleriyle karşılaştır, lig grubunda gerçek üyeler olabilir); RLS için `set local role authenticated`.
+  - **Uyarı:** `pnpm test:db` canlı projeye bağlanır. Her şey geri alınır ama ileride ayrı bir test/staging projesi daha güvenlidir.
+- **CI** (`.github/workflows/ci.yml`): `checks` işi (tip, lint, birim test, build; gizli anahtar gerekmez) ve `db-tests` işi
+  (yerel Supabase'e migration'ları uygulayıp `pnpm test:db -- --local`). `db-tests` henüz bir GitHub çalıştırmasında doğrulanmadı,
+  bu yüzden `continue-on-error` açık; güvenilir olunca kaldırılıp GitHub'da branch koruma ile zorunlu yapılmalı (Settings → Branches →
+  "Require status checks": `checks`). Dependabot haftalık bağımlılık PR'ı açar.
+
 ### Performans notları
 - **Bölge:** Supabase projesi `eu-west-1` (İrlanda). Vercel fonksiyon bölgesi **Dublin (`dub1`)** olmalı
   (Settings → Functions → Function Region); farklı bölge her veritabanı isteğine onlarca ms ekler.
