@@ -404,6 +404,41 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          data: Json
+          id: number
+          kind: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: never
+          kind: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: never
+          kind?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -412,11 +447,15 @@ export type Database = {
           display_name: string | null
           id: string
           last_reminded_on: string | null
+          last_risk_reminded_on: string | null
           league_tier: number
           league_visible: boolean
+          notify_league: boolean
+          notify_social: boolean
           plan: string
           reminder_hour: number
           reminders_enabled: boolean
+          risk_reminders_enabled: boolean
           timezone: string
           timezone_changed_at: string | null
           total_completed: number
@@ -429,11 +468,15 @@ export type Database = {
           display_name?: string | null
           id: string
           last_reminded_on?: string | null
+          last_risk_reminded_on?: string | null
           league_tier?: number
           league_visible?: boolean
+          notify_league?: boolean
+          notify_social?: boolean
           plan?: string
           reminder_hour?: number
           reminders_enabled?: boolean
+          risk_reminders_enabled?: boolean
           timezone?: string
           timezone_changed_at?: string | null
           total_completed?: number
@@ -446,11 +489,15 @@ export type Database = {
           display_name?: string | null
           id?: string
           last_reminded_on?: string | null
+          last_risk_reminded_on?: string | null
           league_tier?: number
           league_visible?: boolean
+          notify_league?: boolean
+          notify_social?: boolean
           plan?: string
           reminder_hour?: number
           reminders_enabled?: boolean
+          risk_reminders_enabled?: boolean
           timezone?: string
           timezone_changed_at?: string | null
           total_completed?: number
@@ -604,6 +651,15 @@ export type Database = {
         Args: { p_action: string; p_max: number; p_window: string }
         Returns: undefined
       }
+      claim_notifications: {
+        Args: { p_limit?: number }
+        Returns: {
+          data: Json
+          id: number
+          kind: string
+          user_id: string
+        }[]
+      }
       compact_chain: {
         Args: { p_before: string; p_chain_id: string }
         Returns: undefined
@@ -720,6 +776,7 @@ export type Database = {
       }
       normalize_username: { Args: { p_username: string }; Returns: string }
       plan_chain_limit: { Args: { p_plan: string }; Returns: number }
+      release_notifications: { Args: { p_ids: number[] }; Returns: undefined }
       report_relapse: {
         Args: { p_chain_id: string }
         Returns: {
@@ -860,6 +917,15 @@ export type Database = {
       }
       user_today: { Args: { p_user_id: string }; Returns: string }
       username_allowed: { Args: { p_username: string }; Returns: boolean }
+      users_at_risk: {
+        Args: { p_limit?: number; p_now?: string }
+        Returns: {
+          at_risk_count: number
+          local_day: string
+          longest_streak: number
+          user_id: string
+        }[]
+      }
       users_to_remind: {
         Args: { p_limit?: number; p_now?: string }
         Returns: {

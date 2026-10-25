@@ -6,7 +6,7 @@ import {
   removePushSubscription,
   savePushSubscription,
   sendTestNotification,
-  updateReminder,
+  updateNotificationPrefs,
 } from "@/app/settings/actions";
 
 type Status =
@@ -17,7 +17,37 @@ type Status =
   | "off"
   | "on";
 
-type Props = { enabled: boolean; hour: number };
+type Prefs = {
+  reminders_enabled: boolean;
+  risk_reminders_enabled: boolean;
+  notify_social: boolean;
+  notify_league: boolean;
+};
+
+type Props = { hour: number; prefs: Prefs };
+
+const PREF_ROWS: { key: keyof Prefs; label: string; hint: string }[] = [
+  {
+    key: "reminders_enabled",
+    label: "Günlük hatırlatma",
+    hint: "Bugünkü halkanı eklemediysen seçtiğin saatte.",
+  },
+  {
+    key: "risk_reminders_enabled",
+    label: "Kırılma uyarısı",
+    hint: "Gece 22:00'de, joker hakkın kalmamış ve bugün tamamlamadığın zincirler için.",
+  },
+  {
+    key: "notify_social",
+    label: "Arkadaşlık ve grup",
+    hint: "Arkadaşlık isteği, kabul ve ortak zincir davetleri.",
+  },
+  {
+    key: "notify_league",
+    label: "Lig sonuçları",
+    hint: "Haftalık terfi ve düşüş.",
+  },
+];
 
 function urlBase64ToUint8Array(base64: string) {
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
@@ -27,8 +57,9 @@ function urlBase64ToUint8Array(base64: string) {
 
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
-export function NotificationSettings({ enabled, hour }: Props) {
+export function NotificationSettings({ hour, prefs: initialPrefs }: Props) {
   const [status, setStatus] = useState<Status>("loading");
+  const [prefs, setPrefs] = useState(initialPrefs);
   const [message, setMessage] = useState<{ ok: boolean; text: string }>();
   const [pending, startTransition] = useTransition();
 
@@ -100,8 +131,21 @@ export function NotificationSettings({ enabled, hour }: Props) {
 
   function changeHour(next: number) {
     startTransition(async () => {
-      const result = await updateReminder(enabled, next);
+      const result = await updateNotificationPrefs({ reminder_hour: next });
       if (!result.ok) setMessage({ ok: false, text: result.error });
+    });
+  }
+
+  function togglePref(key: keyof Prefs) {
+    const next = !prefs[key];
+    setMessage(undefined);
+    setPrefs((prev) => ({ ...prev, [key]: next }));
+    startTransition(async () => {
+      const result = await updateNotificationPrefs({ [key]: next });
+      if (!result.ok) {
+        setPrefs((prev) => ({ ...prev, [key]: !next }));
+        setMessage({ ok: false, text: result.error });
+      }
     });
   }
 
@@ -166,7 +210,7 @@ export function NotificationSettings({ enabled, hour }: Props) {
               <select
                 id="reminder-hour"
                 defaultValue={hour}
-                disabled={pending}
+                disabled={pending || !prefs.reminders_enabled}
                 onChange={(e) => changeHour(Number(e.target.value))}
                 className="h-10 rounded-lg border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
@@ -181,6 +225,34 @@ export function NotificationSettings({ enabled, hour }: Props) {
               Saat, cihazının saat dilimine göre. O gün tüm halkaların
               tamamsa bildirim gelmez.
             </p>
+            <ul className="divide-y rounded-lg border">
+              {PREF_ROWS.map((row) => (
+                <li key={row.key} className="flex items-start justify-between gap-4 p-3">
+                  <div className="space-y-0.5">
+                    <p id={`pref-${row.key}`} className="text-sm font-medium">
+                      {row.label}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{row.hint}</p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={prefs[row.key]}
+                    aria-labelledby={`pref-${row.key}`}
+                    onClick={() => togglePref(row.key)}
+                    className="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-muted outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring aria-checked:bg-emerald-500"
+                  >
+                    <span
+                      aria-hidden
+                      className="absolute top-0.5 left-0.5 size-5 rounded-full bg-white transition-transform"
+                      style={{
+                        transform: prefs[row.key] ? "translateX(1.25rem)" : undefined,
+                      }}
+                    />
+                  </button>
+                </li>
+              ))}
+            </ul>
             <div className="flex gap-2">
               <Button variant="outline" disabled={pending} onClick={test}>
                 Deneme gönder

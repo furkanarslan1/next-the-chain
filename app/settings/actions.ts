@@ -45,19 +45,30 @@ export async function removePushSubscription(
   return { ok: true };
 }
 
-export async function updateReminder(
-  enabled: boolean,
-  hour: number,
-): Promise<SettingsResult> {
+const prefsSchema = z
+  .object({
+    reminders_enabled: z.boolean(),
+    risk_reminders_enabled: z.boolean(),
+    notify_social: z.boolean(),
+    notify_league: z.boolean(),
+    reminder_hour: z.number().int().min(0).max(23),
+  })
+  .partial()
+  .strict();
+
+// Bildirim türleri ve hatırlatma saati (hepsi isteğe bağlı, gönderilen alanlar güncellenir).
+export async function updateNotificationPrefs(input: unknown): Promise<SettingsResult> {
   const user = await getUser();
   if (!user) redirect("/login");
-  const parsed = z.number().int().min(0).max(23).safeParse(hour);
-  if (!parsed.success) return { ok: false, error: "Geçersiz saat." };
+  const parsed = prefsSchema.safeParse(input);
+  if (!parsed.success || Object.keys(parsed.data).length === 0) {
+    return { ok: false, error: "Geçersiz ayar." };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
-    .update({ reminders_enabled: enabled, reminder_hour: parsed.data })
+    .update(parsed.data)
     .eq("id", user.id);
   if (error) return { ok: false, error: "Kaydedilemedi, tekrar dene." };
   revalidatePath("/settings");

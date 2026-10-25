@@ -34,8 +34,13 @@ async function SettingsContent() {
       </section>
 
       <NotificationSettings
-        enabled={profile.reminders_enabled}
         hour={profile.reminder_hour}
+        prefs={{
+          reminders_enabled: profile.reminders_enabled,
+          risk_reminders_enabled: profile.risk_reminders_enabled,
+          notify_social: profile.notify_social,
+          notify_league: profile.notify_league,
+        }}
       />
 
       <section className="space-y-3">
