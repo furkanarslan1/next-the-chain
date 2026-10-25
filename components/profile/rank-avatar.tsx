@@ -6,8 +6,8 @@ import { RANKS } from "@/lib/ranks";
 const BODY = ["#e9dfcb", "#d58a56", "#a9b2bc", "#5aa9e6", "#ffb020", "#9db4ff", "#ff6a3d", "#f472b6"];
 const BACK = ["#cbbf9f", "#8c5a33", "#6d7680", "#3f7fb3", "#ffd166", "#c8d4ff", "#ffb020", "#fdf4ff"];
 
-// Aksesuarlar -50..50 görünüm alanında, gövdenin (x -40..28, y -18..28) üzerine çizilir.
-function Accessory({ rank }: { rank: number }) {
+// Aksesuarlar (bileşen değil, JSX döndüren düz fonksiyon: satori ile de kullanılır) -50..50 görünüm alanında, gövdenin (x -40..28, y -18..28) üzerine çizilir.
+function accessory(rank: number) {
   switch (rank) {
     case 0: // yumurta kabuğu
       return (
@@ -79,9 +79,9 @@ function Accessory({ rank }: { rank: number }) {
   }
 }
 
-export function RankAvatar({ rank, size = 64 }: { rank: number; size?: number }) {
+// Kancasız saf çizici: sunucu bileşenleri ve paylaşım kartı (uid: gradyan kimlikleri için benzersiz önek).
+export function rankAvatarSvg(rank: number, size: number, uid: string) {
   const index = Math.min(Math.max(rank, 0), RANKS.length - 1);
-  const uid = useId().replace(/:/g, "");
   const aura = index >= 4;
   const body = BODY[index];
 
@@ -128,9 +128,14 @@ export function RankAvatar({ rank, size = 64 }: { rank: number; size?: number })
       <circle cx="-30" cy="11" r="3.6" fill="#ff9d7d" opacity="0.6" />
       <circle cx="16" cy="11" r="3.6" fill="#ff9d7d" opacity="0.6" />
 
-      <Accessory rank={index} />
+      {accessory(index)}
     </svg>
   );
+}
+
+export function RankAvatar({ rank, size = 64 }: { rank: number; size?: number }) {
+  const uid = useId().replace(/:/g, "");
+  return rankAvatarSvg(rank, size, uid);
 }
 
 // Listelerde adın yanında küçük rütbe göstergesi.

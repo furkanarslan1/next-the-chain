@@ -1047,6 +1047,15 @@ export type Database = {
           sh_username: string
         }[]
       }
+      share_profile_data: {
+        Args: never
+        Returns: {
+          sh_active_days: number
+          sh_timezone: string
+          sh_total: number
+          sh_username: string
+        }[]
+      }
       sync_badges: { Args: { p_user: string }; Returns: undefined }
       user_today: { Args: { p_user_id: string }; Returns: string }
       username_allowed: { Args: { p_username: string }; Returns: boolean }

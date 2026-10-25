@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { RANKS, rankFor } from "@/lib/ranks";
-import { buildHeatmap, levelFor, weeklySummary, type HeatRow } from "@/lib/profile-stats";
+import { buildHeatmap, levelFor, weekRangeLabel, weeklySummary, type HeatRow } from "@/lib/profile-stats";
 
 describe("rütbeler", () => {
   it("eşikler 0'dan başlar, kesin artar ve adlar benzersizdir", () => {
@@ -109,5 +109,13 @@ describe("haftalık özet", () => {
   it("gelecek günleri saymaz", () => {
     const rows: HeatRow[] = [{ hm_day: "2026-10-24", hm_done: 9, hm_joker: 0 }];
     expect(weeklySummary(rows, "2026-10-21").doneThisWeek).toBe(0);
+  });
+});
+
+describe("hafta aralığı etiketi", () => {
+  it("aynı ay içinde kısa, ay değişince iki ayla yazılır", () => {
+    expect(weekRangeLabel("2026-10-19")).toBe("19-25 Ekim");
+    expect(weekRangeLabel("2026-10-26")).toBe("26 Eki - 1 Kas");
+    expect(weekRangeLabel("2026-12-28")).toBe("28 Ara - 3 Oca");
   });
 });

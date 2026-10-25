@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { RankAvatar } from "@/components/profile/rank-avatar";
+import { ShareDialog } from "@/components/share-dialog";
 import { markRankSeen } from "@/app/profile/actions";
 import { RANKS } from "@/lib/ranks";
 
@@ -33,9 +34,12 @@ export function RankUpDialog({ rank }: { rank: number }) {
           </DialogTitle>
           <p className="text-sm text-muted-foreground">{info.blurb}</p>
         </div>
-        <Button className="h-11" onClick={close}>
-          Harika
-        </Button>
+        <div className="flex items-center justify-center gap-2">
+          <Button className="h-11 px-8" onClick={close}>
+            Harika
+          </Button>
+          <ShareDialog target={{ type: "rank" }} label="Rütbe kartını paylaş" trigger="button" fileName="the-chain-rutbe" />
+        </div>
       </DialogContent>
     </Dialog>
   );

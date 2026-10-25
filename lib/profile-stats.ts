@@ -84,3 +84,16 @@ export function weeklySummary(rows: HeatRow[], today: string): WeeklySummary {
     bestDay: perDay[bestIndex] > 0 ? { label: WEEKDAY_LABELS[bestIndex], done: perDay[bestIndex] } : null,
   };
 }
+
+// "19-25 Ekim" ya da "26 Eki - 1 Kas" biçiminde hafta aralığı.
+export function weekRangeLabel(weekStart: string) {
+  const start = new Date(`${weekStart}T00:00:00Z`);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 6);
+  const month = (d: Date, style: "long" | "short") =>
+    new Intl.DateTimeFormat("tr-TR", { month: style, timeZone: "UTC" }).format(d);
+
+  return start.getUTCMonth() === end.getUTCMonth()
+    ? `${start.getUTCDate()}-${end.getUTCDate()} ${month(start, "long")}`
+    : `${start.getUTCDate()} ${month(start, "short")} - ${end.getUTCDate()} ${month(end, "short")}`;
+}

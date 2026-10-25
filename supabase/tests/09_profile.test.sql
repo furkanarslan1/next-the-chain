@@ -72,5 +72,12 @@ begin
   select lg_active_days into n from public.league_standings() where lg_is_me;
   if n is distinct from 120 then raise exception 'FAIL: league_standings aktif gun=% (120)', n; end if;
 
+  -- Paylaşım verisi: sadece kendi profilin; kullanıcı adı, aktif gün ve saat dilimi döner.
+  select count(*) into n from public.share_profile_data() where sh_username = 'tp_one' and sh_active_days = 120 and sh_timezone is not null;
+  if n <> 1 then raise exception 'FAIL: share_profile_data kendi verisini dondurmedi (%)', n; end if;
+  perform set_config('request.jwt.claim.sub', f::text, true);
+  select count(*) into n from public.share_profile_data() where sh_username = 'tp_one';
+  if n <> 0 then raise exception 'FAIL: share_profile_data baskasinin verisini dondurdu'; end if;
+
   raise exception 'TEST_PASSED';
 end $$;

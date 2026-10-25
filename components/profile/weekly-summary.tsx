@@ -1,9 +1,19 @@
+import type { ReactNode } from "react";
 import { LuTrendingDown, LuTrendingUp } from "react-icons/lu";
 import { WEEKDAY_LABELS } from "@/lib/chains";
 import type { WeeklySummary as Summary } from "@/lib/profile-stats";
 
 // "Bu hafta" özeti: toplam halka, aktif gün, geçen haftayla karşılaştırma ve günlük çubuklar.
-export function WeeklySummary({ summary, todayIndex }: { summary: Summary; todayIndex: number }) {
+export function WeeklySummary({
+  summary,
+  todayIndex,
+  action,
+}: {
+  summary: Summary;
+  todayIndex: number;
+  // Başlığın sağında gösterilecek işlem (örn. paylaş düğmesi).
+  action?: ReactNode;
+}) {
   const { doneThisWeek, activeDaysThisWeek, jokerDaysThisWeek, doneLastWeek, deltaPercent, perDay, bestDay } = summary;
   const peak = Math.max(...perDay, 1);
   const up = deltaPercent !== null && deltaPercent >= 0;
@@ -19,16 +29,19 @@ export function WeeklySummary({ summary, todayIndex }: { summary: Summary; today
           <h2 className="font-semibold">Bu hafta</h2>
           <p className="text-xs text-muted-foreground">Pazartesi&apos;den bugüne</p>
         </div>
-        {deltaPercent !== null && (
-          <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
-              up ? "bg-emerald-500/15 text-emerald-300" : "bg-red-500/15 text-red-300"
-            }`}
-          >
-            {up ? <LuTrendingUp className="size-3.5" aria-hidden /> : <LuTrendingDown className="size-3.5" aria-hidden />}
-            Geçen haftaya göre %{Math.abs(deltaPercent)} {up ? "fazla" : "az"}
-          </span>
-        )}
+        <div className="flex items-center gap-1">
+          {deltaPercent !== null && (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${
+                up ? "bg-emerald-500/15 text-emerald-300" : "bg-red-500/15 text-red-300"
+              }`}
+            >
+              {up ? <LuTrendingUp className="size-3.5" aria-hidden /> : <LuTrendingDown className="size-3.5" aria-hidden />}
+              %{Math.abs(deltaPercent)} {up ? "fazla" : "az"}
+            </span>
+          )}
+          {action}
+        </div>
       </div>
 
       <div className="grid grid-cols-3 divide-x divide-white/10 text-center">

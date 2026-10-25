@@ -2,7 +2,9 @@ import { ImageResponse } from "next/og";
 import { z } from "zod";
 import { getUser } from "@/lib/auth";
 import { BADGE_KEYS, badgeByKey } from "@/lib/badges";
-import { CARD_SIZE, badgeCard, chainCard } from "@/lib/share-cards";
+import { todayIn, weekStartOf } from "@/lib/chains";
+import { weekRangeLabel, weeklySummary } from "@/lib/profile-stats";
+import { CARD_SIZE, badgeCard, chainCard, rankCard, weekCard } from "@/lib/share-cards";
 import { createClient } from "@/lib/supabase/server";
 
 // Giriş yapmış kullanıcının KENDİ zinciri/rozeti için paylaşım kartı (PNG) üretir.
@@ -20,6 +22,8 @@ const querySchema = z.discriminatedUnion("type", [
     key: z.enum(BADGE_KEYS as [string, ...string[]]),
     user: flag.default("0"),
   }),
+  z.object({ type: z.literal("rank"), user: flag.default("0") }),
+  z.object({ type: z.literal("week"), user: flag.default("0") }),
 ]);
 
 const HEADERS = { "Cache-Control": "private, no-store" };
@@ -59,6 +63,34 @@ export async function GET(request: Request) {
         kind: chain.sh_kind,
         title: parsed.data.title === "1" ? chain.sh_title : null,
         username: parsed.data.user === "1" ? chain.sh_username : null,
+      }),
+      options,
+    );
+  }
+
+  // Rütbe ve haftalık özet kartları: sadece kendi profilin.
+  if (parsed.data.type === "rank" || parsed.data.type === "week") {
+    const { data: profile, error: profileError } = await supabase.rpc("share_profile_data");
+    if (profileError) {
+      return profileError.message.includes("rate_limited")
+        ? status(429, "rate_limited")
+        : status(500, "failed");
+    }
+    const me = profile?.[0];
+    if (!me) return status(404, "not_found");
+    const username = parsed.data.user === "1" ? me.sh_username : null;
+
+    if (parsed.data.type === "rank") {
+      return new ImageResponse(rankCard({ activeDays: me.sh_active_days, username }), options);
+    }
+
+    const { data: rows } = await supabase.rpc("my_heatmap", { p_days: 21 });
+    const today = todayIn(me.sh_timezone);
+    return new ImageResponse(
+      weekCard({
+        summary: weeklySummary(rows ?? [], today),
+        range: weekRangeLabel(weekStartOf(today)),
+        username,
       }),
       options,
     );

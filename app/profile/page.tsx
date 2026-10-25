@@ -9,6 +9,7 @@ import { RankLadder } from "@/components/profile/rank-ladder";
 import { RankProgress } from "@/components/profile/rank-progress";
 import { WeeklySummary } from "@/components/profile/weekly-summary";
 import { ListSkeleton } from "@/components/skeletons";
+import { ShareDialog } from "@/components/share-dialog";
 import { requireProfile } from "@/lib/auth";
 import { BADGES } from "@/lib/badges";
 import { todayIn, weekDates, weekStartOf } from "@/lib/chains";
@@ -58,13 +59,16 @@ async function ProfileContent() {
     <>
       {/* kahraman alanı: avatar, rütbe, ilerleme */}
       <section
-        className="space-y-4 rounded-3xl border p-5 text-center"
+        className="relative space-y-4 rounded-3xl border p-5 text-center"
         style={{
           borderColor: `${rank.current.color}44`,
           backgroundColor: "color-mix(in oklab, var(--card) 88%, transparent)",
           backgroundImage: `radial-gradient(90% 70% at 50% 0%, ${rank.current.color}2e, transparent 70%)`,
         }}
       >
+        <div className="absolute top-3 right-3">
+          <ShareDialog target={{ type: "rank" }} label="Rütbe kartını paylaş" fileName="the-chain-rutbe" />
+        </div>
         <div className="mx-auto flex size-36 items-center justify-center">
           <RankAvatar rank={rank.current.index} size={136} />
         </div>
@@ -89,7 +93,11 @@ async function ProfileContent() {
         <Stat label="Lig" value={league.name} color={league.color} />
       </dl>
 
-      <WeeklySummary summary={summary} todayIndex={todayIndex} />
+      <WeeklySummary
+        summary={summary}
+        todayIndex={todayIndex}
+        action={<ShareDialog target={{ type: "week" }} label="Haftalık özet kartını paylaş" fileName="the-chain-haftalik" />}
+      />
 
       <Heatmap weeks={weeks} />
 

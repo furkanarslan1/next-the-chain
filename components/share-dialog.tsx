@@ -14,7 +14,11 @@ import {
 
 type Props = {
   // chain: zincir kartı, badge: rozet kartı
-  target: { type: "chain"; id: string } | { type: "badge"; key: string };
+  target:
+    | { type: "chain"; id: string }
+    | { type: "badge"; key: string }
+    | { type: "rank" }
+    | { type: "week" };
   label: string;
   // Tetikleyici düğmenin görünümü.
   trigger?: "icon" | "button" | "large";
@@ -58,10 +62,13 @@ export function ShareDialog({ target, label, trigger = "icon", fileName = "the-c
   const [loaded, setLoaded] = useState(false);
   const [pending, startTransition] = useTransition();
 
+  const user = showUser ? "1" : "0";
   const params = new URLSearchParams(
     target.type === "chain"
-      ? { type: "chain", id: target.id, title: showTitle ? "1" : "0", user: showUser ? "1" : "0" }
-      : { type: "badge", key: target.key, user: showUser ? "1" : "0" },
+      ? { type: "chain", id: target.id, title: showTitle ? "1" : "0", user }
+      : target.type === "badge"
+        ? { type: "badge", key: target.key, user }
+        : { type: target.type, user },
   );
   const src = `/api/share?${params}`;
 
