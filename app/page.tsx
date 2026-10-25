@@ -3,9 +3,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/bottom-nav";
 import { ChainCard } from "@/components/chain-card";
+import { LeagueCard } from "@/components/league-card";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { closesIn } from "@/lib/leagues";
 import {
   planLimit,
   todayIn,
@@ -40,12 +42,16 @@ async function Dashboard() {
   const yesterday = yesterdayOf(today);
   const limit = planLimit(profile.plan);
 
-  const { data: jokers } = await supabase
-    .from("check_ins")
-    .select("chain_id, day")
-    .eq("user_id", profile.id)
-    .eq("is_joker", true)
-    .gte("day", weekStartOf(today));
+  const [{ data: jokers }, { data: standings }] = await Promise.all([
+    supabase
+      .from("check_ins")
+      .select("chain_id, day")
+      .eq("user_id", profile.id)
+      .eq("is_joker", true)
+      .gte("day", weekStartOf(today)),
+    supabase.rpc("league_standings"),
+  ]);
+  const myLeague = (standings ?? []).find((row) => row.lg_is_me);
 
   const jokersUsed = new Map<string, number>();
   const jokerYesterday = new Set<string>();
@@ -65,6 +71,16 @@ async function Dashboard() {
           </p>
         </div>
       </header>
+
+      {myLeague && (
+        <LeagueCard
+          tier={myLeague.lg_tier}
+          place={myLeague.lg_place}
+          size={myLeague.lg_size}
+          score={myLeague.lg_score}
+          remaining={closesIn(myLeague.lg_week_start)}
+        />
+      )}
 
       {chains.length === 0 ? (
         <section className="space-y-3 rounded-2xl border border-dashed p-6 text-center">

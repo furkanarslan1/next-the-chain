@@ -308,6 +308,102 @@ export type Database = {
           },
         ]
       }
+      league_deleted_stats: {
+        Row: {
+          done: number
+          expected: number
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          done?: number
+          expected?: number
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          done?: number
+          expected?: number
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_deleted_stats_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_members: {
+        Row: {
+          cohort: number
+          tier: number
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          cohort: number
+          tier: number
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          cohort?: number
+          tier?: number
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      league_results: {
+        Row: {
+          cohort: number
+          outcome: string
+          place: number
+          score: number | null
+          tier: number
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          cohort: number
+          outcome: string
+          place: number
+          score?: number | null
+          tier: number
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          cohort?: number
+          outcome?: string
+          place?: number
+          score?: number | null
+          tier?: number
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -316,6 +412,8 @@ export type Database = {
           display_name: string | null
           id: string
           last_reminded_on: string | null
+          league_tier: number
+          league_visible: boolean
           plan: string
           reminder_hour: number
           reminders_enabled: boolean
@@ -331,6 +429,8 @@ export type Database = {
           display_name?: string | null
           id: string
           last_reminded_on?: string | null
+          league_tier?: number
+          league_visible?: boolean
           plan?: string
           reminder_hour?: number
           reminders_enabled?: boolean
@@ -346,6 +446,8 @@ export type Database = {
           display_name?: string | null
           id?: string
           last_reminded_on?: string | null
+          league_tier?: number
+          league_visible?: boolean
           plan?: string
           reminder_hour?: number
           reminders_enabled?: boolean
@@ -563,6 +665,36 @@ export type Database = {
         Args: { p_friend_ids: string[]; p_group_id: string }
         Returns: undefined
       }
+      league_enroll: {
+        Args: { p_user: string; p_week: string }
+        Returns: undefined
+      }
+      league_score: {
+        Args: { p_asof: string; p_user: string; p_week: string }
+        Returns: {
+          done: number
+          expected: number
+          score: number
+        }[]
+      }
+      league_standings: {
+        Args: never
+        Returns: {
+          lg_demote: number
+          lg_done: number
+          lg_expected: number
+          lg_is_me: boolean
+          lg_place: number
+          lg_promote: number
+          lg_score: number
+          lg_size: number
+          lg_tier: number
+          lg_user_id: string
+          lg_username: string
+          lg_week_start: string
+        }[]
+      }
+      league_week_start: { Args: { p_ts?: string }; Returns: string }
       leave_group: { Args: { p_group_id: string }; Returns: undefined }
       my_groups: {
         Args: never
@@ -574,6 +706,16 @@ export type Database = {
           kind: string
           member_count: number
           title: string
+        }[]
+      }
+      my_league_history: {
+        Args: never
+        Returns: {
+          outcome: string
+          place: number
+          score: number
+          tier: number
+          week_start: string
         }[]
       }
       normalize_username: { Args: { p_username: string }; Returns: string }
@@ -689,6 +831,7 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      settle_leagues: { Args: { p_now?: string }; Returns: undefined }
       settle_my_chains: {
         Args: never
         Returns: {
