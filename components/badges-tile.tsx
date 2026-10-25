@@ -8,6 +8,7 @@ export function BadgesTile({ earned, total, wide }: { earned: number; total: num
   return (
     <Link
       href="/badges"
+      data-tour="badges"
       className={`flex flex-col gap-2 rounded-2xl border p-3 outline-none transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring ${
         wide ? "col-span-2" : ""
       }`}

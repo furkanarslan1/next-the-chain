@@ -56,6 +56,7 @@ export function FriendsPanel({ today, ranking, meId, shareToday, friendCount }: 
     return (
       <Link
         href="/friends"
+        data-tour="friends"
         className="flex items-center gap-3 rounded-2xl border border-dashed border-white/20 p-4 outline-none transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring"
         style={card}
       >
@@ -78,7 +79,7 @@ export function FriendsPanel({ today, ranking, meId, shareToday, friendCount }: 
   const showMeSeparately = myIndex >= 3;
 
   return (
-    <section className="space-y-4 rounded-2xl border border-white/10 p-4" style={card}>
+    <section data-tour="friends" className="space-y-4 rounded-2xl border border-white/10 p-4" style={card}>
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">Arkadaşların</h2>
         <Link

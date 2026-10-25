@@ -10,8 +10,10 @@ import { GroupsToday } from "@/components/groups-today";
 import { LeagueCard } from "@/components/league-card";
 import { NewBadgeDialog } from "@/components/new-badge-dialog";
 import { BADGES } from "@/lib/badges";
+import { InstallHost } from "@/components/pwa/install-host";
 import { HomeSkeleton } from "@/components/skeletons";
 import { SkyTint } from "@/components/sky-tint";
+import { TourHost } from "@/components/tour/tour-host";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { TodaySummary } from "@/components/today-summary";
 import { WeekStrip, type DayState } from "@/components/week-strip";
@@ -116,6 +118,10 @@ async function Dashboard() {
 
       <TodaySummary done={doneCount} total={chains.length} />
       {chains.length > 0 && <WeekStrip days={weekDays} />}
+      <InstallHost
+        eligible={profile.tour_stage === 2 && profile.total_completed >= 1}
+        alreadyRecorded={profile.pwa_installed_at !== null}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         {myLeague && (
@@ -141,6 +147,11 @@ async function Dashboard() {
       <GroupsToday groups={groupsToday ?? []} />
 
       <NewBadgeDialog keys={newBadgeKeys} />
+      <TourHost
+        stage={profile.tour_stage}
+        hasChains={chains.length > 0}
+        blocked={newBadgeKeys.length > 0}
+      />
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
@@ -153,6 +164,7 @@ async function Dashboard() {
           {!atLimit && chains.length > 0 && (
             <Link
               href="/chains/new"
+              data-tour="create-chain"
               className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-3.5 text-sm font-medium outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring"
             >
               <LuPlus className="size-4" aria-hidden />
@@ -176,6 +188,7 @@ async function Dashboard() {
               </p>
             </div>
             <Button
+              data-tour="create-chain"
               size="lg"
               className="h-12 w-full rounded-xl text-base"
               render={<Link href="/chains/new" />}

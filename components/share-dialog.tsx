@@ -121,6 +121,7 @@ export function ShareDialog({ target, label, trigger = "icon", fileName = "the-c
     >
       <DialogTrigger
         aria-label={label}
+        data-tour={trigger === "large" ? "share" : undefined}
         className={
           trigger === "icon"
             ? "inline-flex size-8 items-center justify-center rounded-full text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"

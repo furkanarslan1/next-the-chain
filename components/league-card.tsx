@@ -17,6 +17,7 @@ export function LeagueCard({ tier, place, size, score, remaining }: Props) {
   return (
     <Link
       href="/league"
+      data-tour="league"
       className="flex flex-col gap-2 rounded-2xl border p-3 outline-none transition-colors hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring"
       style={{
         borderColor: `${info.color}40`,

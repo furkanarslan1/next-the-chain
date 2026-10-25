@@ -478,6 +478,7 @@ export type Database = {
           notify_league: boolean
           notify_social: boolean
           plan: string
+          pwa_installed_at: string | null
           reminder_hour: number
           reminders_enabled: boolean
           risk_reminders_enabled: boolean
@@ -485,6 +486,7 @@ export type Database = {
           timezone: string
           timezone_changed_at: string | null
           total_completed: number
+          tour_stage: number
           username: string | null
         }
         Insert: {
@@ -501,6 +503,7 @@ export type Database = {
           notify_league?: boolean
           notify_social?: boolean
           plan?: string
+          pwa_installed_at?: string | null
           reminder_hour?: number
           reminders_enabled?: boolean
           risk_reminders_enabled?: boolean
@@ -508,6 +511,7 @@ export type Database = {
           timezone?: string
           timezone_changed_at?: string | null
           total_completed?: number
+          tour_stage?: number
           username?: string | null
         }
         Update: {
@@ -524,6 +528,7 @@ export type Database = {
           notify_league?: boolean
           notify_social?: boolean
           plan?: string
+          pwa_installed_at?: string | null
           reminder_hour?: number
           reminders_enabled?: boolean
           risk_reminders_enabled?: boolean
@@ -531,6 +536,7 @@ export type Database = {
           timezone?: string
           timezone_changed_at?: string | null
           total_completed?: number
+          tour_stage?: number
           username?: string | null
         }
         Relationships: []
@@ -820,6 +826,7 @@ export type Database = {
       league_week_start: { Args: { p_ts?: string }; Returns: string }
       leave_group: { Args: { p_group_id: string }; Returns: undefined }
       mark_badges_seen: { Args: never; Returns: undefined }
+      mark_pwa_installed: { Args: never; Returns: undefined }
       my_badges: {
         Args: never
         Returns: {
@@ -893,6 +900,7 @@ export type Database = {
         Args: { p_note?: string; p_reason: string; p_user_id: string }
         Returns: undefined
       }
+      reset_tour: { Args: never; Returns: undefined }
       respond_group_invite: {
         Args: { p_accept: boolean; p_group_id: string }
         Returns: undefined
@@ -922,6 +930,7 @@ export type Database = {
         }[]
       }
       send_friend_request: { Args: { p_addressee: string }; Returns: string }
+      set_tour_stage: { Args: { p_stage: number }; Returns: undefined }
       settle_chain: {
         Args: { p_chain_id: string }
         Returns: {

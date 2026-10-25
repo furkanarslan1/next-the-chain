@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { PwaCapture } from "@/components/pwa/pwa-capture";
 import { SkyBackground } from "@/components/sky-background";
 import "./globals.css";
 
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <SkyBackground />
+        <PwaCapture />
         {children}
       </body>
     </html>

@@ -4,6 +4,8 @@ import { BottomNav } from "@/components/bottom-nav";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { DeleteAccount } from "@/components/delete-account";
+import { InstallRow } from "@/components/pwa/install-row";
+import { ReplayTourButton } from "@/components/tour/replay-tour-button";
 import { NotificationSettings } from "@/components/notification-settings";
 import { signOut } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
@@ -43,6 +45,13 @@ async function SettingsContent() {
           notify_league: profile.notify_league,
         }}
       />
+
+      <InstallRow />
+
+      <section className="space-y-3">
+        <h2 className="font-medium">Tanıtım</h2>
+        <ReplayTourButton />
+      </section>
 
       <section className="space-y-3">
         <h2 className="font-medium">Zincirler</h2>

@@ -14,6 +14,7 @@ export function TodaySummary({ done, total }: Props) {
 
   return (
     <section
+      data-tour="summary"
       className="flex items-center gap-4 rounded-3xl border p-4"
       style={{
         borderColor: `${color}40`,

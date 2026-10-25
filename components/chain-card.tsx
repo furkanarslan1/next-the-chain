@@ -88,6 +88,7 @@ export function ChainCard({
 
   return (
     <article
+      data-tour="chain-card"
       className="relative overflow-hidden rounded-3xl border p-4 shadow-lg shadow-black/20"
       style={{
         borderColor: `${color}3d`,
@@ -114,6 +115,7 @@ export function ChainCard({
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label={`${chain.title} zincir seçenekleri`}
+            data-tour="menu"
             disabled={pending}
             className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground outline-none transition-colors hover:bg-white/10 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
           >
@@ -168,7 +170,7 @@ export function ChainCard({
         <Stat label="Toplam" value={chain.total_completed} />
       </dl>
 
-      <div className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+      <div data-tour="joker" className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
         <JokerStatus color={color} weekly={chain.weekly_jokers} left={jokersLeft} />
         <JokerInfo weekly={chain.weekly_jokers} left={jokersLeft} />
       </div>
@@ -206,6 +208,7 @@ export function ChainCard({
           </div>
         ) : (
           <Button
+            data-tour="checkin"
             size="lg"
             className="h-12 rounded-xl text-base font-semibold text-black shadow-lg"
             style={{ backgroundColor: color, boxShadow: `0 6px 20px ${color}55` }}

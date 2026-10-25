@@ -12,6 +12,7 @@ export function BottomNav({ active }: { active: "home" | "groups" | "friends" | 
   return (
     <nav
       aria-label="Ana gezinme"
+      data-tour="nav"
       className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/90 backdrop-blur"
     >
       <ul className="mx-auto flex max-w-md">
