@@ -58,7 +58,8 @@ select cron.schedule(
     headers := jsonb_build_object(
       'Authorization',
       'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'cron_secret')
-    )
+    ),
+    timeout_milliseconds := 10000
   );
   $$
 );
