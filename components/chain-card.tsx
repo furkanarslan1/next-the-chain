@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { ChainVisual } from "@/components/chain-visual";
 import { JokerInfo } from "@/components/joker-info";
+import { ShareDialog } from "@/components/share-dialog";
 import {
   archiveChain,
   checkIn,
@@ -85,13 +86,20 @@ export function ChainCard({
             <JokerInfo weekly={chain.weekly_jokers} left={jokersLeft} />
           </div>
         </div>
-        <div className="shrink-0 text-right">
-          <p className="text-3xl font-semibold leading-none tabular-nums">
-            {chain.current_length}
-          </p>
-          <p className="mt-1 text-xs tabular-nums text-muted-foreground">
-            En uzun {chain.best_length}
-          </p>
+        <div className="flex shrink-0 items-start gap-1">
+          <ShareDialog
+            target={{ type: "chain", id: chain.id }}
+            label={`${chain.title} kartını paylaş`}
+            fileName="the-chain"
+          />
+          <div className="text-right">
+            <p className="text-3xl font-semibold leading-none tabular-nums">
+              {chain.current_length}
+            </p>
+            <p className="mt-1 text-xs tabular-nums text-muted-foreground">
+              En uzun {chain.best_length}
+            </p>
+          </div>
         </div>
       </header>
       {chain.group_id && (

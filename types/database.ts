@@ -611,6 +611,35 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          badge: string
+          earned_at: string
+          seen_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badge: string
+          earned_at?: string
+          seen_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badge?: string
+          earned_at?: string
+          seen_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -752,6 +781,15 @@ export type Database = {
       }
       league_week_start: { Args: { p_ts?: string }; Returns: string }
       leave_group: { Args: { p_group_id: string }; Returns: undefined }
+      mark_badges_seen: { Args: never; Returns: undefined }
+      my_badges: {
+        Args: never
+        Returns: {
+          bd_badge: string
+          bd_earned_at: string
+          bd_is_new: boolean
+        }[]
+      }
       my_groups: {
         Args: never
         Returns: {
@@ -915,6 +953,26 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      share_badge_data: {
+        Args: { p_badge: string }
+        Returns: {
+          sh_earned_at: string
+          sh_username: string
+        }[]
+      }
+      share_chain_data: {
+        Args: { p_chain_id: string }
+        Returns: {
+          sh_best: number
+          sh_color: string
+          sh_kind: string
+          sh_length: number
+          sh_title: string
+          sh_total: number
+          sh_username: string
+        }[]
+      }
+      sync_badges: { Args: { p_user: string }; Returns: undefined }
       user_today: { Args: { p_user_id: string }; Returns: string }
       username_allowed: { Args: { p_username: string }; Returns: boolean }
       users_at_risk: {

@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/bottom-nav";
 import { ChainCard } from "@/components/chain-card";
 import { LeagueCard } from "@/components/league-card";
+import { NewBadgeDialog } from "@/components/new-badge-dialog";
+import { BADGES } from "@/lib/badges";
 import { TimezoneSync } from "@/components/timezone-sync";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -42,7 +44,7 @@ async function Dashboard() {
   const yesterday = yesterdayOf(today);
   const limit = planLimit(profile.plan);
 
-  const [{ data: jokers }, { data: standings }] = await Promise.all([
+  const [{ data: jokers }, { data: standings }, { data: badges }] = await Promise.all([
     supabase
       .from("check_ins")
       .select("chain_id, day")
@@ -50,8 +52,10 @@ async function Dashboard() {
       .eq("is_joker", true)
       .gte("day", weekStartOf(today)),
     supabase.rpc("league_standings"),
+    supabase.rpc("my_badges"),
   ]);
   const myLeague = (standings ?? []).find((row) => row.lg_is_me);
+  const newBadgeKeys = (badges ?? []).filter((b) => b.bd_is_new).map((b) => b.bd_badge);
 
   const jokersUsed = new Map<string, number>();
   const jokerYesterday = new Set<string>();
@@ -81,6 +85,18 @@ async function Dashboard() {
           remaining={closesIn(myLeague.lg_week_start)}
         />
       )}
+
+      <Link
+        href="/badges"
+        className="flex items-center justify-between rounded-2xl border p-3 text-sm outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <span className="font-medium">Rozetler</span>
+        <span className="text-muted-foreground">
+          {(badges ?? []).length} / {BADGES.length} <span aria-hidden>›</span>
+        </span>
+      </Link>
+
+      <NewBadgeDialog keys={newBadgeKeys} />
 
       {chains.length === 0 ? (
         <section className="space-y-3 rounded-2xl border border-dashed p-6 text-center">
