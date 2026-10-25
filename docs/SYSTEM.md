@@ -354,6 +354,28 @@ Komutlar: `pnpm typecheck` · `pnpm lint` · `pnpm test` (birim) · `pnpm test:d
 - **Veritabanı seyreltme:** lig sıralaması grup başına 6 saatte bir, rozet kontrolü 30 dakikada bir hesaplanır.
   Kullanıcıya özel veri sunucuda ortak önbelleğe konmaz (güvenlik); ortak veri (lig) veritabanında paylaşılır.
 
+### Profil, rütbe ve ısı haritası
+- **Rütbe** `profiles.active_days`'ten hesaplanır: **günde en az bir halka eklenen gün sayısı** (günde bir kez sayılır; zincir sayısından
+  ve plandan bağımsızdır, uygulamanın "istikrar" fikrine uygun). `check_in()` o günün ilk halkasında sayacı bir artırır ve **hiç düşmez**
+  (zincir kırılsa da rütbe kalır). Eşikler ve adlar yalnızca `lib/ranks.ts`'tedir (veritabanı sadece sayacı tutar):
+  Çaylak 0 · Çırak 10 · Kalfa 30 · Usta 50 · Üstat 100 · Bilge 200 · Efsane 365 · Sonsuz Zincir 1000. Rütbe saklanmaz, her seferinde
+  hesaplanır, bu yüzden eşikleri değiştirmek veriyi bozmaz.
+- **Geçmiş kullanıcılar:** Sayaç, migration sırasında saklı günler (son ~60 gün) ve sıkıştırılmış aylık özetlerin (zincirlerin birleşimi)
+  gün sayısından **yaklaşık** hesaplanmıştır; çok eski günler için kesin değildir. Sonrası kesindir.
+- **Avatar** (`components/profile/rank-avatar.tsx`): Halka mascotu rütbeye göre renk, aksesuar ve parıltı alır (yumurta kabuğu, önlük,
+  bandana, çekiç, mezuniyet kepi, sakal, alevli taç, altın taç + gökkuşağı halka). Sade SVG, sunucuda çizilir. Yeni rütbe eklerken
+  `RANKS`, `BODY`/`BACK` renk dizileri ve `Accessory` içindeki `case` birlikte güncellenmelidir (birim test uyarır).
+- **Profil sayfası** (`/profile`; ana sayfadaki avatardan ve Ayarlar'dan açılır): avatar ve rütbe, bir sonraki rütbeye ilerleme, istatistikler,
+  **haftalık özet**, **ısı haritası**, rozetler ve tüm rütbelerin listesi.
+- **Isı haritası** (`my_heatmap(p_days)`): son 16 hafta, her kare bir gün; renk o gün tamamlanan zincir sayısı (1-4+), halka içindeki nokta joker
+  günü. Son ~60 gün günlük kayıtlardan gelir; daha eski günler aylık özetlerden (o günler için sayı bilinmez, tamamlanan gün "1" sayılır).
+- **Haftalık özet:** bu haftanın toplam halkası ve aktif günü, geçen haftayla yüzde karşılaştırma, günlük çubuklar, en verimli gün
+  (aynı isı haritası verisinden istemci tarafında hesaplanır, ek sorgu yok).
+- **Rütbe atlama kutlaması:** `profiles.rank_seen` görülen en yüksek rütbedir (`set_rank_seen`, sadece ilerler). Ana sayfa yeni rütbeyi bir kez
+  pencereyle gösterir; yeni rozet penceresi açıkken ertelenir, açıkken tur da başlamaz.
+- **Listelerde rütbe:** arkadaş sıralaması, lig ve grup sıralamasında kullanıcı adının yanında küçük rütbe avatarı görünür
+  (`friends_leaderboard`, `league_standings`, `group_standings` artık aktif günü de döndürür).
+
 ### Tanıtım turu ve uygulama yükleme
 - **Tanıtım turu** (`components/tour/`): Ekran bulanıklaşır, hedef öğe delik açılıp net bırakılır ve beyaz halkayla
   çevrilir; yanında mascot **Halka** konuşur (İleri/Geri/Atla, ilerleme noktaları, Esc ile kapanır, odak kutu içinde
@@ -415,6 +437,7 @@ public/         sw.js, ikonlar
 13. `home_social` - bugünkü durum gizlilik ayarı, arkadaşlar bugün, ortak zincir özeti
 14. `perf_throttling` - lig sıralama kaydı, rozet kontrolünü seyreltme
 15. `onboarding_pwa` - tanıtım turu aşaması, PWA yükleme ölçümü
+16. `profile_ranks_heatmap` - aktif gün sayacı, rütbe kutlaması, ısı haritası, listelerde aktif gün
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -460,6 +483,8 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 | Rozet kontrolü | en fazla 30 dakikada bir |
 | Tarayıcı sayfa önbelleği | 60 sn |
 | PWA şeridi gizleme | 7 gün |
+| Rütbe eşikleri (aktif gün) | 0 · 10 · 30 · 50 · 100 · 200 · 365 · 1000 |
+| Isı haritası penceresi | 16 hafta |
 | Kırılma uyarısı saati | 22:00 yerel, en az 3 halkalık zincir |
 | Cron sıklığı | 10 dk (hatırlatma), Pazartesi 12:00 UTC (lig) |
 | Veri sıkıştırma eşiği | 60 gün |
@@ -477,9 +502,9 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 - Bildirimler için moderasyon paneli yok; `reports` tablosu Supabase panelinden okunur ve işlem elle yapılır.
 - Yasaklı kelime listesi kısa; Türkçe ve İngilizce için yeni kelimeler `blocked_words`'e eklenmeli.
 - "Beyana dayalı check-in" (hile) tamamen çözülemez; şimdilik ödül yok, kanıt/onay özelliği yok.
-- Isı haritası ve haftalık özet yok.
 - Rozet kazanınca push bildirimi yok, sadece uygulamada gösterilir.
-- Paylaşım kartı yalnızca zincir ve rozet için var; lig sonucu ya da haftalık özet kartı yok.
+- Paylaşım kartı yalnızca zincir ve rozet için var; rütbe, haftalık özet ve lig sonucu kartı yok.
+- Aktif gün sayacı geçmiş için yaklaşık hesaplandı (eski günlerin ayrıntısı sıkıştırıldığı için).
 - Profil sayfası yok (kullanıcı adı ve saat dilimi Ayarlar'da).
 - React Native (Expo) uygulaması: monorepo'ya geçiş ve `packages/core` çıkarımı yapılmadı.
 - Vercel Hobby ticari kullanıma izin vermez; gerçek kullanıcılara açmadan önce Pro gerekir.
