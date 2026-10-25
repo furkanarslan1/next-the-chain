@@ -161,13 +161,26 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 
 - Kullanıcı Ayarlar'dan bildirimi açar (cihaz başına abonelik; kullanıcı başına en fazla **5 cihaz**).
 - **Hatırlatma saati** kullanıcının yerel saatidir, varsayılan **20:00**, Ayarlar'dan değişir.
-- Hatırlatma şu koşullarla gider: hatırlatmalar açık, yerel saat = hatırlatma saati,
+- **Bildirim türleri** (Ayarlar'dan her biri ayrı açılıp kapatılır, hepsi varsayılan açık):
+  - **Günlük hatırlatma** (aşağıdaki koşullarla),
+  - **Kırılma uyarısı:** yerel **22:00**'de, en az **3 halkalık**, bugün tamamlanmamış, dün korunmuş ve bu hafta
+    **joker hakkı bitmiş** (yani atlanırsa gerçekten kırılacak) zincirler için, günde en fazla bir kez
+    (`last_risk_reminded_on`),
+  - **Arkadaşlık ve grup:** arkadaşlık isteği geldi, istek kabul edildi, ortak zincire davet edildin,
+  - **Lig sonuçları:** haftalık terfi ve düşüş ("Ligde kaldın" için bildirim gönderilmez).
+- Olay bildirimleri (arkadaşlık, davet, lig) bir **gelen kutusu** tablosuna (`notifications`) veritabanı
+  tetikleyicileriyle yazılır; cron her 10 dakikada tabloyu boşaltıp push gönderir. Bu yüzden bu bildirimler
+  **en fazla ~10 dakika gecikmeyle** gelir. Satırlar `claim_notifications()` ile alınırken "gönderildi" olarak
+  işaretlenir (eşzamanlı çalıştırmalar aynı satırı iki kez almaz); süre bütçesi dolarsa işlenmeyenler
+  `release_notifications()` ile geri bırakılır. 3 günden eski kayıtlar silinir.
+- Günlük hatırlatma şu koşullarla gider: hatırlatmalar açık, yerel saat = hatırlatma saati,
   **bugünkü halkası eklenmemiş aktif zinciri var**, en az bir aboneliği var, **bugün henüz hatırlatılmamış**
   (`last_reminded_on`).
 - Zamanlayıcı: Supabase `pg_cron` her **10 dakikada bir** `GET /api/cron/reminders` çağırır
   (`Authorization: Bearer <CRON_SECRET>`). Secret yoksa/yanlışsa **401**.
-- Gönderim **25'erli paralel** gruplarla, bir çağrıda en fazla **500** kullanıcı, **7 sn** süre
-  bütçesiyle; kalanlar aynı saat içinde sonraki çağrıda devam eder.
+- Gönderim **25'erli paralel** gruplarla, bir çağrıda en fazla **500** kullanıcı (gelen kutusundan 100 satır),
+  **7 sn** süre bütçesiyle; kalanlar sonraki çağrıda devam eder. Sıra: gelen kutusu, kırılma uyarısı,
+  günlük hatırlatma.
 - Geçersizleşen abonelikler (404/410) otomatik silinir.
 - Aynı cihaz başka hesaba geçerse eski hesabın aboneliği silinir.
 - **iPhone:** bildirim sadece uygulama **ana ekrana eklenmişse** çalışır (iOS 16.4+).
@@ -187,6 +200,7 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 | `push_subscriptions` | Bildirim abonelikleri |
 | `blocked_words` | Yasaklı kullanıcı adı kelimeleri (panelden düzenlenebilir) |
 | `rate_limits` | Oran sınırlama sayaçları |
+| `notifications` | Gönderilmeyi bekleyen olay bildirimleri (gelen kutusu) |
 | `reports` | Kullanıcı bildirimleri |
 | `league_members`, `league_results`, `league_deleted_stats` | Lig üyelikleri, sonuçları ve silinen zincirlerin haftalık katkısı (bkz. bölüm 9) |
 
@@ -276,6 +290,7 @@ public/         sw.js, ikonlar
 8. `polish` - arşivden geri alma limiti, davet iptali
 9. `abuse_guards` - saat dilimi sınırı, yasaklı kelimeler, oran sınırı, bildirme
 10. `leagues` - ligler
+11. `more_notifications` - gelen kutusu, kırılma uyarısı, sosyal ve lig bildirimleri
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -315,6 +330,7 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 | Saat dilimi değişikliği | 24 saatte bir |
 | Arama / arkadaşlık isteği oran sınırı | 30/dk · 20/saat |
 | Bildirme | günde 20 |
+| Kırılma uyarısı saati | 22:00 yerel, en az 3 halkalık zincir |
 | Cron sıklığı | 10 dk (hatırlatma), Pazartesi 12:00 UTC (lig) |
 | Veri sıkıştırma eşiği | 60 gün |
 | Lig grup boyu | 30 |
@@ -332,7 +348,6 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 - Yasaklı kelime listesi kısa; Türkçe ve İngilizce için yeni kelimeler `blocked_words`'e eklenmeli.
 - "Beyana dayalı check-in" (hile) tamamen çözülemez; şimdilik ödül yok, kanıt/onay özelliği yok.
 - Isı haritası, haftalık özet, rozetler, paylaşılabilir kart yok.
-- Ek bildirim türleri yok (kırılma riski, arkadaş tamamladı, davet geldi).
 - Profil sayfası yok (kullanıcı adı ve saat dilimi Ayarlar'da).
 - React Native (Expo) uygulaması: monorepo'ya geçiş ve `packages/core` çıkarımı yapılmadı.
 - Vercel Hobby ticari kullanıma izin vermez; gerçek kullanıcılara açmadan önce Pro gerekir.

@@ -4,6 +4,11 @@ Kullanıcı, yerel saatiyle seçtiği saatte (varsayılan 20:00) o gün tamamlan
 aktif zinciri varsa bildirim alır. Zamanlayıcı saatlik olarak
 `GET /api/cron/reminders` adresini çağırır.
 
+## Bildirim türleri
+Günlük hatırlatma, kırılma uyarısı (yerel 22:00, joker hakkı kalmamış zincirler), arkadaşlık/grup ve lig sonuçları.
+Her tür Ayarlar'dan ayrı kapatılır. Olay bildirimleri gelen kutusundan (`notifications` tablosu) her 10 dakikada
+bir gönderilir; kuralların tamamı için bkz. `SYSTEM.md` bölüm 7.
+
 ## 1. Anahtarları üret (bir kez)
 
 ```
