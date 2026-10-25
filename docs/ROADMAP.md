@@ -64,7 +64,8 @@
 ### Faz 2 — Sosyal
 - [x] Arkadaş arama (kullanıcı adı), istek gönderme/kabul/reddet, arkadaş listesi
 - [ ] Davet linki
-- Ortak zincirler
+- [x] Ortak zincirler (her üyenin kendi zinciri, grup sıralaması, "başaramayanlar")
+- [ ] Gruba sonradan davet, üye çıkarma
 - [x] Arkadaş sıralaması (haftalık/aylık)
 - [ ] Ligler (terfi/düşme)
 - Hatırlatma bildirimleri (Web Push / PWA)

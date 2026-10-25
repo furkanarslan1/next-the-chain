@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { ChainVisual } from "@/components/chain-visual";
@@ -93,6 +94,14 @@ export function ChainCard({
           </p>
         </div>
       </header>
+      {chain.group_id && (
+        <Link
+          href={`/groups/${chain.group_id}`}
+          className="mt-2 inline-block text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+        >
+          Ortak zincir · Grubu gör
+        </Link>
+      )}
       {jokerUsedYesterday && (
         <p className="mt-2 text-xs text-amber-400">
           Dün joker kullanıldı, zincirin korundu.
@@ -154,14 +163,16 @@ export function ChainCard({
       <details className="mt-3 text-center text-xs text-muted-foreground">
         <summary className="cursor-pointer select-none">Yönet</summary>
         <div className="mt-2 flex justify-center gap-4">
-          <button
-            type="button"
-            onClick={archive}
-            disabled={pending}
-            className="underline-offset-4 hover:text-foreground hover:underline"
-          >
-            Arşivle
-          </button>
+          {!chain.group_id && (
+            <button
+              type="button"
+              onClick={archive}
+              disabled={pending}
+              className="underline-offset-4 hover:text-foreground hover:underline"
+            >
+              Arşivle
+            </button>
+          )}
           <button
             type="button"
             onClick={remove}

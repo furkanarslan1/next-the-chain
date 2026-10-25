@@ -39,6 +39,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      chain_group_members: {
+        Row: {
+          chain_id: string | null
+          created_at: string
+          group_id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          chain_id?: string | null
+          created_at?: string
+          group_id: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          chain_id?: string | null
+          created_at?: string
+          group_id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chain_group_members_chain_id_fkey"
+            columns: ["chain_id"]
+            isOneToOne: false
+            referencedRelation: "chains"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chain_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chain_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chain_group_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chain_groups: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          kind: string
+          owner_id: string
+          title: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: string
+          kind: string
+          owner_id: string
+          title: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          owner_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chain_groups_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chain_history: {
         Row: {
           chain_id: string
@@ -76,6 +157,7 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          group_id: string | null
           id: string
           kind: string
           last_day: string | null
@@ -92,6 +174,7 @@ export type Database = {
           color?: string
           created_at?: string
           current_length?: number
+          group_id?: string | null
           id?: string
           kind?: string
           last_day?: string | null
@@ -108,6 +191,7 @@ export type Database = {
           color?: string
           created_at?: string
           current_length?: number
+          group_id?: string | null
           id?: string
           kind?: string
           last_day?: string | null
@@ -118,6 +202,13 @@ export type Database = {
           weekly_jokers?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "chains_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "chain_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "chains_owner_id_fkey"
             columns: ["owner_id"]
@@ -253,6 +344,7 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          group_id: string | null
           id: string
           kind: string
           last_day: string | null
@@ -273,6 +365,16 @@ export type Database = {
         Args: { p_before: string; p_chain_id: string }
         Returns: undefined
       }
+      create_chain_group: {
+        Args: {
+          p_color: string
+          p_friend_ids?: string[]
+          p_kind: string
+          p_title: string
+        }
+        Returns: string
+      }
+      delete_group: { Args: { p_group_id: string }; Returns: undefined }
       friends_leaderboard: {
         Args: { p_from: string }
         Returns: {
@@ -281,6 +383,56 @@ export type Database = {
           display_name: string
           user_id: string
           username: string
+        }[]
+      }
+      group_friend_ids: {
+        Args: { p_ids: string[]; p_me: string }
+        Returns: string[]
+      }
+      group_invites: {
+        Args: never
+        Returns: {
+          color: string
+          group_id: string
+          kind: string
+          member_count: number
+          owner_username: string
+          title: string
+        }[]
+      }
+      group_pending_invites: {
+        Args: { p_group_id: string }
+        Returns: {
+          member_id: string
+          member_username: string
+        }[]
+      }
+      group_standings: {
+        Args: { p_group_id: string }
+        Returns: {
+          best_chain_length: number
+          chain_length: number
+          member_display_name: string
+          member_id: string
+          member_username: string
+          state: string
+        }[]
+      }
+      invite_to_group: {
+        Args: { p_friend_ids: string[]; p_group_id: string }
+        Returns: undefined
+      }
+      leave_group: { Args: { p_group_id: string }; Returns: undefined }
+      my_groups: {
+        Args: never
+        Returns: {
+          chain_id: string
+          color: string
+          group_id: string
+          is_owner: boolean
+          kind: string
+          member_count: number
+          title: string
         }[]
       }
       plan_chain_limit: { Args: { p_plan: string }; Returns: number }
@@ -293,6 +445,7 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          group_id: string | null
           id: string
           kind: string
           last_day: string | null
@@ -308,6 +461,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      respond_group_invite: {
+        Args: { p_accept: boolean; p_group_id: string }
+        Returns: undefined
       }
       search_users: {
         Args: { p_query: string }
@@ -329,6 +486,33 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          group_id: string | null
+          id: string
+          kind: string
+          last_day: string | null
+          owner_id: string
+          title: string
+          total_completed: number
+          visibility: string
+          weekly_jokers: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "chains"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      settle_chain_for: {
+        Args: { p_chain_id: string; p_user: string }
+        Returns: {
+          archived_at: string | null
+          best_length: number
+          break_count: number
+          color: string
+          created_at: string
+          current_length: number
+          group_id: string | null
           id: string
           kind: string
           last_day: string | null
@@ -354,6 +538,7 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          group_id: string | null
           id: string
           kind: string
           last_day: string | null
