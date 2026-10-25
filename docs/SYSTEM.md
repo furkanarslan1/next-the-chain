@@ -245,8 +245,12 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 - **Arayüz:** Ana sayfada küçük lig kartı (lig, sıra, yüzde, kalan süre) `/league` sayfasına gider. Orada kendi
   liginin ve grubunun sıralaması, terfi/düşme bölgeleri, "Lig nasıl çalışır?", son haftaların sonuçları ve
   "Ligde adım görünsün" anahtarı vardır. Diğer oyuncuların yanında bildirme bayrağı bulunur.
-- **Canlı sıralama notu:** Başkalarının henüz uygulamayı açmamış olması, jokerleri işlenmediği için puanlarını
-  geçici olarak düşük gösterebilir; haftalık kapanışta herkesin zinciri önce işlenir, nihai sonuç doğrudur.
+- **Sıralama önbelleği:** Grubun sıralaması `league_snapshots` tablosuna kaydedilir ve **en fazla 6 saatte bir**
+  yeniden hesaplanır; o süre boyunca grubun herkesi aynı kaydı okur (eskiden her açılışta 30 kişinin puanı
+  hesaplanıyordu). Yeni katılan biri kayıtta yoksa hemen yenilenir. Kullanıcı adı ve gizlilik (`league_visible`)
+  okuma anında uygulanır, yani gizlilik değişikliği hemen yansır. Süre `league_standings()` içinde tek satırdır.
+  Bu yüzden kendi puanın birkaç saat gecikmeli görünebilir; haftalık kapanışta herkesin zinciri önce işlenir,
+  nihai sonuç her zaman doğrudur.
 - Lig tablolarına istemci erişimi yoktur; her şey `league_standings()` ve `my_league_history()` RPC'leriyle.
 
 ## 10. Rozetler ve paylaşım kartı
@@ -263,7 +267,8 @@ Detaylı kurulum: `NOTIFICATIONS.md`.
 | Lig | `first_promotion` | Herhangi bir hafta terfi (`promoted`) sonucu |
 | Lig | `perfect_week` | Herhangi bir lig haftasında %100 puan |
 
-- **Tembel hesaplama:** Kullanıcı uygulamayı açtığında (`my_badges()`) kurallar kontrol edilir, sağlananlar
+- **Tembel hesaplama:** Kullanıcı uygulamayı açtığında (`my_badges()`) kurallar kontrol edilir (**en fazla
+  30 dakikada bir**; `check_in()` zamanlayıcıyı sıfırladığı için halka ekleyince yeni rozet hemen görünür), sağlananlar
   `user_badges`'e **bir kez** yazılır. Sonradan zincir silinse ya da arkadaşlık bitse bile rozet kalır.
   Rozet için ayrı push bildirimi yoktur.
 - **"Yeni rozet" penceresi:** Ana sayfada `seen_at` boş olan rozetler gösterilir; pencere kapanınca
@@ -314,6 +319,17 @@ Next.js 16 (App Router, `proxy.ts`, Cache Components), React 19, TypeScript, Tai
 **İş mantığı Supabase'tedir** (RPC/SQL); bu sayede React Native uygulaması aynı backend'i kullanır.
 Next.js Server Actions sadece web içindir.
 
+### Performans notları
+- **Bölge:** Supabase projesi `eu-west-1` (İrlanda). Vercel fonksiyon bölgesi **Dublin (`dub1`)** olmalı
+  (Settings → Functions → Function Region); farklı bölge her veritabanı isteğine onlarca ms ekler.
+- **Tarayıcı önbelleği:** `experimental.staleTimes.dynamic = 60` sn. Bir sayfaya 60 sn içinde tekrar girmek sunucuya
+  gitmez. Sunucu işlemleri (`revalidatePath`) tüm tarayıcı önbelleğini anında temizler; çıkış (`signOut`) ve
+  `markBadgesSeen` de bunu çağırır. **Yeni bir yazma eylemi eklerken mutlaka `revalidatePath` çağır**, yoksa ekran
+  60 sn bayat kalabilir.
+- **İskelet ekranlar:** `components/skeletons.tsx` (ana sayfa ve liste iskeleti), her sayfanın `Suspense` yedeğidir.
+- **Veritabanı seyreltme:** lig sıralaması grup başına 6 saatte bir, rozet kontrolü 30 dakikada bir hesaplanır.
+  Kullanıcıya özel veri sunucuda ortak önbelleğe konmaz (güvenlik); ortak veri (lig) veritabanında paylaşılır.
+
 ### Arayüz notları
 - **Yazı tipi:** Geist (`latin` + `latin-ext`, Türkçe karakterler için). `globals.css`'te `--font-sans`
   `var(--font-geist-sans)`'e bağlıdır; kendine bağlı bırakılırsa tarayıcı serif'e düşer.
@@ -352,6 +368,7 @@ public/         sw.js, ikonlar
 11. `more_notifications` - gelen kutusu, kırılma uyarısı, sosyal ve lig bildirimleri
 12. `badges_and_sharing` - rozetler ve paylaşım kartı verisi
 13. `home_social` - bugünkü durum gizlilik ayarı, arkadaşlar bugün, ortak zincir özeti
+14. `perf_throttling` - lig sıralama kaydı, rozet kontrolünü seyreltme
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -393,6 +410,9 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 | Bildirme | günde 20 |
 | Rozet sayısı | 13 |
 | Paylaşım kartı | saatte 60, 1080×1350 PNG |
+| Lig sıralaması yenileme | en fazla 6 saatte bir |
+| Rozet kontrolü | en fazla 30 dakikada bir |
+| Tarayıcı sayfa önbelleği | 60 sn |
 | Kırılma uyarısı saati | 22:00 yerel, en az 3 halkalık zincir |
 | Cron sıklığı | 10 dk (hatırlatma), Pazartesi 12:00 UTC (lig) |
 | Veri sıkıştırma eşiği | 60 gün |
