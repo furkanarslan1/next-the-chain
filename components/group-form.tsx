@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { createGroup, type GroupFormState } from "@/app/groups/actions";
+import { JokerPicker } from "@/components/joker-picker";
 import { CHAIN_COLORS } from "@/lib/chains";
 
 const initialState: GroupFormState = {};
@@ -81,6 +82,8 @@ export function GroupForm({ friends }: { friends: Friend[] }) {
           ))}
         </div>
       </fieldset>
+
+      <JokerPicker hint="Bu hak gruptaki herkes için geçerli olur ve grup kurulduktan sonra değiştirilemez." />
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Arkadaşlarını davet et</legend>

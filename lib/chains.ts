@@ -110,3 +110,25 @@ export function weekDates(weekStart: string) {
 }
 
 export const WEEKDAY_LABELS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"] as const;
+
+// Zincir başına seçilebilir haftalık joker hakkı ve haftalık hedef (gün) seçenekleri.
+export const JOKER_OPTIONS = [0, 1, 2] as const;
+export const WEEKLY_GOALS = [1, 2, 3, 4, 5, 6] as const;
+
+// "27 Ekim Salı" gibi kısa gün etiketi (YYYY-MM-DD girdi).
+export function dayLabel(day: string) {
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric",
+    month: "long",
+    weekday: "long",
+    timeZone: "UTC",
+  }).format(new Date(`${day}T00:00:00Z`));
+}
+
+// Bu hafta (Pzt-Paz) tamamlanan gün sayısı; haftalık hedefli zincirin ilerlemesi için.
+export function weekDoneCount(
+  checkIns: { chain_id: string; day: string; is_joker: boolean }[],
+  chainId: string,
+) {
+  return checkIns.filter((c) => c.chain_id === chainId && !c.is_joker).length;
+}
