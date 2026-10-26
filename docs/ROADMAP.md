@@ -17,7 +17,8 @@
 
 | Konu | Karar |
 |---|---|
-| Joker kuralı | **Haftalık sabit hak: haftada 2 gün** atlanabilir. Aylık ayrı limit yok. |
+| Joker kuralı | **Zincir başına haftada 0, 1 ya da 2 gün** (varsayılan 2), kullanıcı seçer. Azaltmak anında, artırmak sonraki Pazartesi'den geçerli. Ortak zincirde grup kurulurken tek değer. Aylık ayrı limit yok. |
+| Haftalık hedef | **"Haftada N gün" (1-6)** zinciri: hafta bitince N'den az halka varsa kırılır, joker yok. |
 | Kırılma cezası | Zincir kırılınca **sadece aktif zincir** sıfırlanır. Toplam/ömür boyu sayı düşmez. |
 | Sıralama | Genel (all-time) sıralama **yok**. **Haftalık/aylık ligler** ve **arkadaş sıralaması**. |
 | Sosyal | Kullanıcılar arkadaşlarıyla **ortak zincir** oluşturabilir; arkadaşlar arasında sıralama olur. |

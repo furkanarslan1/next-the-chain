@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { chainSchema } from "@/lib/validations/chain";
+import { groupChainSchema } from "@/lib/validations/chain";
 
 export type GroupFormState = { error?: string };
 export type GroupResult = { ok: true } | { ok: false; error: string };
@@ -35,10 +35,11 @@ export async function createGroup(
 ): Promise<GroupFormState> {
   if (!(await getUser())) redirect("/login");
 
-  const parsed = chainSchema.safeParse({
+  const parsed = groupChainSchema.safeParse({
     title: formData.get("title"),
     kind: formData.get("kind"),
     color: formData.get("color"),
+    jokers: formData.get("jokers") ?? undefined,
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
@@ -53,6 +54,7 @@ export async function createGroup(
     p_color: parsed.data.color,
     p_kind: parsed.data.kind,
     p_friend_ids: friendIds.data,
+    p_weekly_jokers: parsed.data.jokers,
   });
   if (error) return { error: messageFor(error) };
 

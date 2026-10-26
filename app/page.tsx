@@ -28,6 +28,7 @@ import {
   planLimit,
   todayIn,
   weekDates,
+  weekDoneCount,
   weekStartOf,
   yesterdayOf,
   type Chain,
@@ -95,8 +96,16 @@ async function Dashboard() {
     if (day > today) {
       state = "future";
     } else {
-      const eligible = chains.filter((c) => c.created_at.slice(0, 10) <= day).length;
-      const done = (weekCheckIns ?? []).filter((c) => c.day === day && !c.is_joker).length;
+      const doneChains = new Set(
+        (weekCheckIns ?? []).filter((c) => c.day === day && !c.is_joker).map((c) => c.chain_id),
+      );
+      // Haftalık hedefli zincir, o gün yapıldıysa sayılır; yapılmayan gün eksik sayılmaz.
+      const eligible = chains.filter(
+        (c) =>
+          c.created_at.slice(0, 10) <= day &&
+          (c.goal_per_week === null || doneChains.has(c.id)),
+      ).length;
+      const done = doneChains.size;
       state = eligible > 0 && done >= eligible ? "full" : done > 0 ? "partial" : "none";
     }
     return { state, today: day === today };
@@ -106,7 +115,13 @@ async function Dashboard() {
     (chain) =>
       chain.last_day !== null && chain.last_day >= today && chain.current_length > 0,
   );
-  const doneCount = doneFlags.filter(Boolean).length;
+  // Haftalık hedefi tamamlanmış zincir, bugün yapılmasa da özette tamam sayılır.
+  const doneCount = chains.filter(
+    (chain, i) =>
+      doneFlags[i] ||
+      (chain.goal_per_week !== null &&
+        weekDoneCount(weekCheckIns ?? [], chain.id) >= chain.goal_per_week),
+  ).length;
   const rank = rankFor(profile.active_days);
   // Yeni rütbe kutlaması; yeni rozet penceresiyle çakışmasın diye o açıkken ertelenir.
   const rankUp = rank.current.index > profile.rank_seen && newBadgeKeys.length === 0;
@@ -225,6 +240,7 @@ async function Dashboard() {
                 doneToday={doneFlags[i]}
                 jokersUsed={jokersUsed.get(chain.id) ?? 0}
                 jokerUsedYesterday={jokerYesterday.has(chain.id)}
+                weekDone={weekDoneCount(weekCheckIns ?? [], chain.id)}
               />
             ))}
           </div>

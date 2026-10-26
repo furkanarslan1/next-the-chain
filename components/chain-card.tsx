@@ -34,6 +34,8 @@ type Props = {
   doneToday: boolean;
   jokersUsed: number;
   jokerUsedYesterday: boolean;
+  // Bu hafta tamamlanan gün sayısı (haftalık hedefli zincirler için).
+  weekDone: number;
 };
 
 export function ChainCard({
@@ -41,6 +43,7 @@ export function ChainCard({
   doneToday,
   jokersUsed,
   jokerUsedYesterday,
+  weekDone,
 }: Props) {
   const [pending, startTransition] = useTransition();
   const [celebrate, setCelebrate] = useState(false);
@@ -49,6 +52,7 @@ export function ChainCard({
   const isQuit = chain.kind === "quit";
   const color = chain.color;
   const jokersLeft = Math.max(chain.weekly_jokers - jokersUsed, 0);
+  const goal = chain.goal_per_week;
 
   function complete() {
     setError(undefined);
@@ -107,7 +111,7 @@ export function ChainCard({
             <h2 className="truncate text-base font-semibold">{chain.title}</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            {isQuit ? "Bırakıyorum" : "Her gün"}
+            {isQuit ? "Bırakıyorum" : goal ? `Haftada ${goal} gün` : "Her gün"}
             {chain.group_id ? " · Ortak zincir" : ""}
           </p>
         </div>
@@ -170,10 +174,26 @@ export function ChainCard({
         <Stat label="Toplam" value={chain.total_completed} />
       </dl>
 
-      <div data-tour="joker" className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
-        <JokerStatus color={color} weekly={chain.weekly_jokers} left={jokersLeft} />
-        <JokerInfo weekly={chain.weekly_jokers} left={jokersLeft} />
-      </div>
+      {goal ? (
+        <div className="mt-3 text-xs text-muted-foreground">
+          <WeekGoalStatus color={color} goal={goal} done={weekDone} />
+        </div>
+      ) : (
+        <div data-tour="joker" className="mt-3 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+          <JokerStatus color={color} weekly={chain.weekly_jokers} left={jokersLeft} />
+          <JokerInfo
+            chainId={chain.id}
+            weekly={chain.weekly_jokers}
+            left={jokersLeft}
+            pending={
+              chain.pending_weekly_jokers !== null && chain.pending_jokers_from
+                ? { value: chain.pending_weekly_jokers, from: chain.pending_jokers_from }
+                : null
+            }
+            locked={chain.group_id ? "group" : null}
+          />
+        </div>
+      )}
 
       {jokerUsedYesterday && (
         <p className="mt-2 text-xs text-amber-400">
@@ -257,6 +277,15 @@ function JokerStatus({
   weekly: number;
   left: number;
 }) {
+  if (weekly === 0) {
+    return (
+      <span className="flex items-center gap-2">
+        <span>Joker</span>
+        <span className="tabular-nums">yok, günü kaçırma</span>
+      </span>
+    );
+  }
+
   return (
     <span
       className="flex items-center gap-2"
@@ -275,6 +304,40 @@ function JokerStatus({
       </span>
       <span className="tabular-nums">
         {left}/{weekly} kaldı
+      </span>
+    </span>
+  );
+}
+
+// Haftalık hedefli zincir: bu hafta tamamlanan gün / hedef.
+function WeekGoalStatus({
+  color,
+  goal,
+  done,
+}: {
+  color: string;
+  goal: number;
+  done: number;
+}) {
+  const reached = done >= goal;
+  return (
+    <span
+      className="flex items-center gap-2"
+      role="img"
+      aria-label={`Bu hafta hedefin ${goal} günden ${done} günü tamamlandı`}
+    >
+      <span>Bu hafta</span>
+      <span className="flex gap-1" aria-hidden>
+        {Array.from({ length: goal }, (_, i) => (
+          <span
+            key={i}
+            className="size-2 rounded-full border"
+            style={i < done ? { backgroundColor: color, borderColor: color } : undefined}
+          />
+        ))}
+      </span>
+      <span className="tabular-nums">
+        {Math.min(done, goal)}/{goal} gün{reached ? ", hedef tamam" : ""}
       </span>
     </span>
   );

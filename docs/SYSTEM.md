@@ -23,6 +23,9 @@ Mobile-first; önce PWA, sonra React Native (Expo).
 - **quit (bırakacağım):** her gün uzak durulan şey. Buton: "Bugün temiz kaldım". Ek olarak
   **"Nüks oldu"** vardır (bkz. 2.5).
 
+Bir de sıklığa göre iki tür vardır: **günlük** zincir (varsayılan, joker hakkıyla) ve yalnızca build zincirinde
+**haftalık hedefli** zincir (bkz. 2.7).
+
 ### Alanlar
 | Alan | Anlamı |
 |---|---|
@@ -31,7 +34,10 @@ Mobile-first; önce PWA, sonra React Native (Expo).
 | `total_completed` | Bu zincirde ömür boyu tamamlanan halka (asla düşmez) |
 | `break_count` | Kaç kez kırıldı |
 | `last_day` | Zincirin korunduğu son gün (tamamlanan ya da jokerle kapatılan), kullanıcının yerel tarihi |
-| `weekly_jokers` | Haftalık joker hakkı (şu an herkes için **2**) |
+| `weekly_jokers` | Haftalık joker hakkı: zincir başına **0, 1 ya da 2** (varsayılan 2). Haftalık hedefli zincirde hep 0 |
+| `pending_weekly_jokers`, `pending_jokers_from` | Bekleyen joker artışı ve geçerli olacağı ilk Pazartesi (bkz. 2.3) |
+| `goal_per_week` | Haftalık hedef (haftada 1-6 gün). `null` ise günlük zincir (bkz. 2.7) |
+| `streak_started_on` | Güncel serinin ilk halka günü (haftalık hedefin ilk kısmi haftası için) |
 | `visibility` | `private` (varsayılan) ya da `friends`. Veritabanı destekliyor, **arayüzde seçeneği yok** |
 | `group_id` | Ortak zincirse bağlı grup (bkz. bölüm 6) |
 | `archived_at` | Doluysa arşivde |
@@ -69,6 +75,16 @@ açtığında ya da check-in yaptığında.
 - **Joker kendiliğinden kullanılır**, kullanıcının basacağı bir buton yoktur.
 - **Joker halka eklemez**, sadece zinciri korur.
 - Joker hakkı **her Pazartesi yenilenir**. Her zincirin hakkı ayrıdır.
+- **Hak isteğe bağlıdır:** zincir oluştururken **0, 1 ya da 2** seçilir (varsayılan 2). 0 ise kaçırılan ilk gün zinciri kırar.
+  Kartın joker satırındaki (i) penceresinden sonradan değiştirilir (`set_chain_jokers`):
+  - **Azaltmak anında** geçerlidir.
+  - **Artırmak sonraki Pazartesi'den** geçerlidir (`pending_*` alanları). Kaçırılmış bir güne geriye dönük hak verilmez:
+    `settle`, bekleyen değeri yalnızca geçerli olacağı günden itibaren olan günlere uygular. Vakti gelince bir sonraki
+    `settle`'da asıl değere yazılır. Aynı değere dönmek bekleyen artışı iptal eder.
+  - Değiştirmeden önce kaçırılan günler eski hakla kapatılır.
+  - **Ortak zincirde** hak grup kurulurken tek değer olarak seçilir (`chain_groups.weekly_jokers`), davetle katılan herkesin
+    zinciri bu değerle açılır ve sonradan değişmez.
+  - İstemci joker alanını doğrudan güncelleyemez; yeni zincirde sadece 0-2 yazabilir (RLS `with check`).
 
 ### 2.4 Kırılmanın sonucu
 Sadece **aktif zincir sıfırlanır**. `best_length`, zincirin `total_completed`'ı ve profilin
@@ -84,6 +100,26 @@ Sadece **aktif zincir sıfırlanır**. `best_length`, zincirin `total_completed`
   Geri alma da **plan limitine** tabidir.
 - **Ortak zincir arşivlenemez** (bkz. bölüm 6). Çıkmak için gruptan ayrılmak gerekir.
 - **Sil:** kalıcıdır, geçmişiyle birlikte.
+
+### 2.7 Haftalık hedefli zincir
+- "Haftada N gün" (N: 1-6), sadece build zincirinde. Hangi günlerin yapılacağı kullanıcıya kalır; her gün yine en
+  fazla bir halka eklenir ve halka sayısı (uzunluk, rozetler, toplam) günlük zincirle aynı şekilde sayılır.
+- **Kırılma:** hafta (Pazartesi-Pazar) bittiğinde o haftada N'den az halka varsa zincir kırılır (`settle`, yine tembel:
+  kullanıcı açınca). Tamamen boş geçen hafta da kırar. Kırılma sonucu 2.4'teki gibidir.
+- **İlk (kısmi) hafta:** seri haftanın ortasında başlarsa hedef, kalan gün sayısını aşamaz
+  (`min(N, serinin ilk gününden hafta sonuna kalan gün)`; `streak_started_on`).
+- **Joker yoktur** (`weekly_jokers = 0`, tetikleyici sabitler). Bu zincirler "joker hakkı bitti" kırılma uyarısına girmez.
+- **Hatırlatma:** haftanın hedefi tamamlandıysa günlük hatırlatma o zincir için gönderilmez.
+- **Ekran:** kartta "Bu hafta ●●○ 2/3 gün". Hedefi tamamlanan zincir "Bugün" özetinde tamam sayılır; hafta şeridinde
+  yapılmayan gün eksik sayılmaz.
+- **Lig puanı:** zincirin beklentisi `min(N, geçen gün)`, tamamlananı da bu değerle sınırlanır (fazla halka diğer
+  zincirlerin eksiğini kapatmaz). Silinen zincirin anlık kaydı da aynı kuralı kullanır.
+- Ortak zincir günlüktür (haftalık hedef grupta yok).
+
+### 2.8 Hızlı tamamla ve ana ekran kısayolları
+- `/quick`: bugünün zincirlerini büyük butonlarla tek dokunuşla tamamlama sayfası (haftalık hedefli zincirde "2/3 gün" gösterir).
+- Web uygulama manifest'inde **kısayollar** vardır (Hızlı tamamla, Yeni zincir, Profilim): yüklü PWA simgesine uzun basınca
+  çıkar (Android/Chrome). **iOS kısayolları desteklemez**; gerçek ana ekran widget'ı için yerel uygulama (Expo) gerekir.
 
 ## 3. Planlar ve limitler
 
@@ -327,14 +363,14 @@ Next.js Server Actions sadece web içindir.
 ### Testler ve CI
 Komutlar: `pnpm typecheck` · `pnpm lint` · `pnpm test` (birim) · `pnpm test:db` (veritabanı) · `pnpm build`.
 
-- **Birim testler** (`tests/unit/`, Vitest, 41 test): tarih yardımcıları, spiral yerleşimi (sığma ve ortalama), form doğrulamaları,
+- **Birim testler** (`tests/unit/`, Vitest, 68 test): tarih yardımcıları, spiral yerleşimi (sığma ve ortalama), form doğrulamaları,
   lig yardımcıları, bildirim metinleri. **Kayma bekçileri** kod ile SQL'in ayrışmasını yakalar: rozet listesi
   (`lib/badges.ts` ↔ `user_badges` kısıtı ve `sync_badges`), plan limitleri (`PLAN_LIMITS` ↔ `plan_chain_limit()`), tur hedefleri
   (`steps.ts` ↔ bileşenlerdeki `data-tour`). Yeni rozet, plan ya da tur adımı eklerken bu testler hangi dosyaların birlikte
   güncellenmesi gerektiğini söyler.
-- **Veritabanı testleri** (`supabase/tests/*.test.sql`, 8 dosya): `01` koruma kuralları · `02` zincirin çekirdek kuralları (halka,
+- **Veritabanı testleri** (`supabase/tests/*.test.sql`, 10 dosya): `01` koruma kuralları · `02` zincirin çekirdek kuralları (halka,
   joker, kırılma, nüks, plan limiti, sıkıştırma) · `03` arkadaşlık · `04` **RLS** (`authenticated` rolüne geçip yetkisiz okuma/yazmayı
-  dener) · `05` ortak zincirler · `06` ligler · `07` rozetler ve bildirimler · `08` tur ve PWA kaydı.
+  dener) · `05` ortak zincirler · `06` ligler · `07` rozetler ve bildirimler · `08` tur ve PWA kaydı · `09` profil · `10` isteğe bağlı joker ve haftalık hedef.
   - Her dosya tek bir `DO` bloğudur: sahte kullanıcılar (`@test.invalid`) oluşturur, kuralları doğrular, bir doğrulama tutmazsa
     `FAIL: ...` verir ve sonunda **`TEST_PASSED` hatasıyla kendini geri alır** (veritabanında iz kalmaz). `scripts/db-test.mjs`
     sonucu okur ve ayrıca sahte kullanıcı kalmadığını (temizlik) denetler.
@@ -444,6 +480,7 @@ public/         sw.js, ikonlar
 15. `onboarding_pwa` - tanıtım turu aşaması, PWA yükleme ölçümü
 16. `profile_ranks_heatmap` - aktif gün sayacı, rütbe kutlaması, ısı haritası, listelerde aktif gün
 17. `share_profile_data` - rütbe ve haftalık özet kartlarının verisi
+18. `optional_joker_weekly_goal` - zincir başına 0-2 joker (artış Pazartesi'den), haftalık hedefli zincir, grup joker hakkı
 
 ### Komutlar
 `pnpm dev` · `pnpm build` · `pnpm lint` · `pnpm db:push` (migration uygula) · `pnpm db:types` (tipleri yenile)
@@ -472,7 +509,8 @@ uygulanmadan önce `pnpm supabase db push --linked --dry-run` ile kontrol edilir
 
 | Ne | Değer |
 |---|---|
-| Haftalık joker | 2 (zincir başına, Pazartesi yenilenir) |
+| Haftalık joker | 0, 1 ya da 2 (zincir başına seçilir, varsayılan 2; Pazartesi yenilenir) |
+| Haftalık hedef | haftada 1-6 gün (sadece build, ortak zincirde yok) |
 | Aktif zincir limiti | free 2 · pro 5 · max 10 |
 | Toplam zincir satırı | 50 |
 | Grup kişi sınırı / kullanıcı başına grup | 20 / 10 |

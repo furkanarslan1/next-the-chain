@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { chainSchema } from "@/lib/validations/chain";
+import { personalChainSchema } from "@/lib/validations/chain";
 
 export type ChainFormState = { error?: string };
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -16,17 +16,29 @@ export async function createChain(
   const user = await getUser();
   if (!user) redirect("/login");
 
-  const parsed = chainSchema.safeParse({
+  const parsed = personalChainSchema.safeParse({
     title: formData.get("title"),
     kind: formData.get("kind"),
     color: formData.get("color"),
+    frequency: formData.get("frequency") ?? undefined,
+    goal: formData.get("goal") ?? undefined,
+    jokers: formData.get("jokers") ?? undefined,
   });
   if (!parsed.success) return { error: parsed.error.issues[0].message };
 
+  const { title, kind, color, frequency, goal, jokers } = parsed.data;
+  const weekly = frequency === "weekly";
+
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("chains")
-    .insert({ ...parsed.data, owner_id: user.id });
+  const { error } = await supabase.from("chains").insert({
+    title,
+    kind,
+    color,
+    owner_id: user.id,
+    // Haftalık hedefli zincirde joker yoktur (veritabanı da 0'a sabitler).
+    weekly_jokers: weekly ? 0 : jokers,
+    goal_per_week: weekly ? goal : null,
+  });
   if (error) {
     const message = error.message;
     return {
@@ -46,6 +58,31 @@ export async function checkIn(chainId: string): Promise<ActionResult> {
   const supabase = await createClient();
   const { error } = await supabase.rpc("check_in", { p_chain_id: chainId });
   if (error) return { ok: false, error: "Tamamlanamadı, tekrar dene." };
+  revalidatePath("/");
+  return { ok: true };
+}
+
+const JOKER_ERRORS: Record<string, string> = {
+  group_jokers_fixed: "Ortak zincirin joker hakkı grup kurulurken belirlenir.",
+  weekly_goal_no_jokers: "Haftalık hedefli zincirlerde joker yoktur.",
+};
+
+export async function setChainJokers(
+  chainId: string,
+  value: number,
+): Promise<ActionResult> {
+  if (!Number.isInteger(value) || value < 0 || value > 2) {
+    return { ok: false, error: "Geçersiz joker sayısı." };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_chain_jokers", {
+    p_chain_id: chainId,
+    p_value: value,
+  });
+  if (error) {
+    const key = Object.keys(JOKER_ERRORS).find((k) => error.message.includes(k));
+    return { ok: false, error: key ? JOKER_ERRORS[key] : "Kaydedilemedi, tekrar dene." };
+  }
   revalidatePath("/");
   return { ok: true };
 }
