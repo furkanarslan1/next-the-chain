@@ -175,18 +175,18 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          goal_per_week: number | null
           group_id: string | null
           id: string
           kind: string
           last_day: string | null
           owner_id: string
-          title: string
-          total_completed: number
-          visibility: string
-          goal_per_week: number | null
           pending_jokers_from: string | null
           pending_weekly_jokers: number | null
           streak_started_on: string | null
+          title: string
+          total_completed: number
+          visibility: string
           weekly_jokers: number
         }
         Insert: {
@@ -196,18 +196,18 @@ export type Database = {
           color?: string
           created_at?: string
           current_length?: number
+          goal_per_week?: number | null
           group_id?: string | null
           id?: string
           kind?: string
           last_day?: string | null
           owner_id: string
-          title: string
-          total_completed?: number
-          visibility?: string
-          goal_per_week?: number | null
           pending_jokers_from?: string | null
           pending_weekly_jokers?: number | null
           streak_started_on?: string | null
+          title: string
+          total_completed?: number
+          visibility?: string
           weekly_jokers?: number
         }
         Update: {
@@ -217,18 +217,18 @@ export type Database = {
           color?: string
           created_at?: string
           current_length?: number
+          goal_per_week?: number | null
           group_id?: string | null
           id?: string
           kind?: string
           last_day?: string | null
           owner_id?: string
-          title?: string
-          total_completed?: number
-          visibility?: string
-          goal_per_week?: number | null
           pending_jokers_from?: string | null
           pending_weekly_jokers?: number | null
           streak_started_on?: string | null
+          title?: string
+          total_completed?: number
+          visibility?: string
           weekly_jokers?: number
         }
         Relationships: [
@@ -716,18 +716,18 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          goal_per_week: number | null
           group_id: string | null
           id: string
           kind: string
           last_day: string | null
           owner_id: string
-          title: string
-          total_completed: number
-          visibility: string
-          goal_per_week: number | null
           pending_jokers_from: string | null
           pending_weekly_jokers: number | null
           streak_started_on: string | null
+          title: string
+          total_completed: number
+          visibility: string
           weekly_jokers: number
         }
         SetofOptions: {
@@ -916,18 +916,18 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          goal_per_week: number | null
           group_id: string | null
           id: string
           kind: string
           last_day: string | null
           owner_id: string
-          title: string
-          total_completed: number
-          visibility: string
-          goal_per_week: number | null
           pending_jokers_from: string | null
           pending_weekly_jokers: number | null
           streak_started_on: string | null
+          title: string
+          total_completed: number
+          visibility: string
           weekly_jokers: number
         }
         SetofOptions: {
@@ -980,18 +980,18 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          goal_per_week: number | null
           group_id: string | null
           id: string
           kind: string
           last_day: string | null
           owner_id: string
-          title: string
-          total_completed: number
-          visibility: string
-          goal_per_week: number | null
           pending_jokers_from: string | null
           pending_weekly_jokers: number | null
           streak_started_on: string | null
+          title: string
+          total_completed: number
+          visibility: string
           weekly_jokers: number
         }
         SetofOptions: {
@@ -1012,18 +1012,18 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          goal_per_week: number | null
           group_id: string | null
           id: string
           kind: string
           last_day: string | null
           owner_id: string
-          title: string
-          total_completed: number
-          visibility: string
-          goal_per_week: number | null
           pending_jokers_from: string | null
           pending_weekly_jokers: number | null
           streak_started_on: string | null
+          title: string
+          total_completed: number
+          visibility: string
           weekly_jokers: number
         }
         SetofOptions: {
@@ -1042,18 +1042,18 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          goal_per_week: number | null
           group_id: string | null
           id: string
           kind: string
           last_day: string | null
           owner_id: string
-          title: string
-          total_completed: number
-          visibility: string
-          goal_per_week: number | null
           pending_jokers_from: string | null
           pending_weekly_jokers: number | null
           streak_started_on: string | null
+          title: string
+          total_completed: number
+          visibility: string
           weekly_jokers: number
         }
         SetofOptions: {
@@ -1073,18 +1073,18 @@ export type Database = {
           color: string
           created_at: string
           current_length: number
+          goal_per_week: number | null
           group_id: string | null
           id: string
           kind: string
           last_day: string | null
           owner_id: string
-          title: string
-          total_completed: number
-          visibility: string
-          goal_per_week: number | null
           pending_jokers_from: string | null
           pending_weekly_jokers: number | null
           streak_started_on: string | null
+          title: string
+          total_completed: number
+          visibility: string
           weekly_jokers: number
         }[]
         SetofOptions: {
